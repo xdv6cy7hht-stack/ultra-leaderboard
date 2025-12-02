@@ -1,270 +1,194 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
 <title>ULTRA Production Leaderboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <style>
-  :root{
-    --bg:#f9f9f9;
-    --card:#ffffff;
-    --muted:#7d7d7d;
-    --accent:#c0c0c0;
-    --green:#2e9b55;
-    --red:#c0392b;
-    --max-width:980px;
-    font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif;
-  }
-  body{
-    background:var(--bg);
-    color:#202428;
+body {
+    font-family: Arial, sans-serif;
     margin:0;
-    padding:28px 18px;
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-  }
-  .container{
-    width:100%;
-    max-width:var(--max-width);
-  }
-  header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom:18px;
-  }
-  h1{ margin:0; font-size:22px; letter-spacing:0.2px; }
-  .controls{ display:flex; gap:10px; align-items:center; }
-  button, .btn{
-    background:var(--card);
-    border:1px solid var(--accent);
-    padding:8px 12px;
-    border-radius:6px;
-    cursor:pointer;
-    font-weight:600;
-    color:#222;
-  }
-  button.secondary{ background:transparent; }
-  .board{
-    display:grid;
-    grid-template-columns: 1fr;
-    gap:12px;
-  }
-  .team-card{
-    background:var(--card);
-    border:1px solid var(--accent);
-    padding:14px;
+    background:#f1f3f5;
+}
+header {
+    padding:16px;
+    text-align:center;
+}
+h1 {margin:4px;}
+.pin-box {
+    background:#eee;
+    padding:10px;
+    text-align:center;
+}
+.pin-box input {
+    width:120px;
+    font-size:18px;
+    text-align:center;
+}
+.container {
+    max-width:800px;
+    margin:0 auto;
+}
+.team {
+    background:#fff;
+    margin:12px;
+    padding:12px;
     border-radius:10px;
-    display:flex;
-    gap:14px;
-    align-items:center;
-    min-height:88px;
-  }
-  .team-info{ flex:1; }
-  .team-name{ font-weight:700; font-size:16px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
-  .rank-badge{ background:var(--accent); padding:6px 8px; border-radius:6px; font-weight:700; color:#222; }
-  .leader{ box-shadow:0 0 0 3px rgba(200,210,220,0.5); background:linear-gradient(90deg,#fbfdff,#f3f7fa); }
-  .input-row{ display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
-  input[type="number"]{
-    padding:8px 10px;
-    border:1px solid var(--accent);
-    border-radius:6px;
-    width:180px;
-    background:transparent;
-    font-size:14px;
-  }
-  .update-btn{ padding:8px 10px; }
-  .meta{ font-size:12px; color:var(--muted); margin-top:6px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-  .progress-wrap{ width:240px; max-width:30%; min-width:190px; }
-  .progress{ height:14px; background:#e0e0e0; border-radius:10px; overflow:hidden; border:1px solid var(--accent); }
-  .progress > i{ display:block; height:100%; width:0%; transition:width 400ms ease; }
-  .status{ font-weight:700; padding:6px 8px; border-radius:6px; display:inline-block; }
-  .small{ font-size:12px; color:var(--muted); }
-  footer{ margin-top:14px; font-size:13px; color:var(--muted); }
-  @media (max-width:880px){
-    .progress-wrap{ max-width:40%; }
-    input[type="number"]{ width:140px; }
-  }
+    box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+.team h2 {margin:0 0 6px;}
+input.parts {
+    width:140px;
+    font-size:18px;
+}
+button {
+    padding:6px 12px;
+    font-size:15px;
+}
+.progress-bar {
+    height:14px;
+    background:#ddd;
+    border-radius:7px;
+    overflow:hidden;
+    margin-top:8px;
+}
+.progress {
+    height:100%;
+    width:0%;
+    background:gray;
+}
+.status {
+    margin-top:6px;
+}
+.ahead { color:green; }
+.behind { color:red; }
 </style>
 </head>
 <body>
-<div class="container">
+
 <header>
-  <h1>ULTRA Production Leaderboard</h1>
-  <div class="controls">
-    <button id="resetAll" class="btn">Reset all data</button>
-    <button id="exportBtn" class="btn secondary">Export JSON</button>
-  </div>
+    <h1>ULTRA Production Leaderboard</h1>
+    <div>Target: 4,000 parts/hour • Daily target: 36,000</div>
 </header>
-<main class="board" id="board"></main>
-<footer>
-  <div class="small">Target: <strong>4,000 parts/hour</strong> • Daily target: <strong>36,000 parts (9 hours)</strong></div>
-  <div class="small" style="margin-top:6px">Enter each team's total parts produced and click Update. Time and performance are calculated automatically from 09:00.</div>
-</footer>
+
+<div class="pin-box">
+    🔐 Enter PIN to enable editing:
+    <input id="pinInput" type="number" maxlength="4">
+    <span id="pinStatus">Locked</span>
 </div>
+
+<div class="container">
+    <div class="team" data-team="ULTRA1">
+        <h2>ULTRA1</h2>
+        <input class="parts" type="number" placeholder="Total parts" disabled>
+        <button disabled>Update</button>
+        <div class="progress-bar"><div class="progress"></div></div>
+        <div class="status"></div>
+    </div>
+
+    <div class="team" data-team="ULTRA2">
+        <h2>ULTRA2</h2>
+        <input class="parts" type="number" placeholder="Total parts" disabled>
+        <button disabled>Update</button>
+        <div class="progress-bar"><div class="progress"></div></div>
+        <div class="status"></div>
+    </div>
+
+    <div class="team" data-team="ULTRA3">
+        <h2>ULTRA3</h2>
+        <input class="parts" type="number" placeholder="Total parts" disabled>
+        <button disabled>Update</button>
+        <div class="progress-bar"><div class="progress"></div></div>
+        <div class="status"></div>
+    </div>
+</div>
+
 <script>
-(function(){
-  const TEAMS = ['ULTRA1','ULTRA2','ULTRA3'];
-  const TARGET_PER_HOUR = 4000;
-  const DAILY_TARGET = 36000;
-  const START_HOUR = 9;
-  const STORAGE_KEY = 'ultra_leaderboard_v2';
+const PIN = "0711";
+const START_HOUR = 9;
+const RATE = 4000;
 
-  function loadData(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return makeDefaultData();
-      const parsed = JSON.parse(raw);
-      for(const t of TEAMS){ if(!parsed[t]) parsed[t] = makeEmptyTeam(t); }
-      return parsed;
-    }catch(e){ return makeDefaultData(); }
-  }
-  function makeEmptyTeam(name){ return { name, total:0, lastUpdated:null }; }
-  function makeDefaultData(){ const obj={}; TEAMS.forEach(t=>obj[t]=makeEmptyTeam(t)); return obj; }
+const firebaseConfig = {
+  apiKey: "AIzaSyDemo",
+  authDomain: "demo.firebaseapp.com",
+  databaseURL: "https://demo.firebaseio.com",
+  projectId: "demo",
+  storageBucket: "demo.appspot.com",
+  messagingSenderId: "000000",
+  appId: "0:0:web:0"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-  let data = loadData();
-  function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
-  function nowTimestamp(){ return new Date().toISOString(); }
-  function formatNice(ts){ return ts ? new Date(ts).toLocaleString() : 'Never'; }
+const pinInput = document.getElementById("pinInput");
+const pinStatus = document.getElementById("pinStatus");
 
-  const board = document.getElementById('board');
+pinInput.addEventListener("input", ()=>{
+    if(pinInput.value === PIN){
+        document.querySelectorAll("input.parts,button").forEach(el=>el.disabled=false);
+        pinStatus.innerText="Unlocked ✅";
+        pinStatus.style.color="green";
+    }
+});
 
-  function hoursElapsed(){
+function elapsedHours(){
     const now = new Date();
     const start = new Date();
     start.setHours(START_HOUR,0,0,0);
-    return Math.max(0,(now-start)/1000/3600);
-  }
+    return Math.max(0,(now-start)/36e5);
+}
 
-  function render(){
-    const elapsed = hoursElapsed();
-    const arr = Object.values(data).map(t=>{
-      const total = Number(t.total)||0;
-      const expected = elapsed*TARGET_PER_HOUR;
-      const diffParts = Math.round(total-expected);
-      const minutesAhead = Math.round(diffParts/TARGET_PER_HOUR*60);
-      return {...t,total,expected,diffParts,minutesAhead,elapsed};
-    });
+function updateUI(team, parts){
+    const root=document.querySelector(`[data-team="${team}"]`);
+    const prog=root.querySelector(".progress");
+    const status=root.querySelector(".status");
 
-    arr.sort((a,b)=> b.total-a.total);
-    board.innerHTML='';
-    arr.forEach((team,idx)=>{
-      const card=document.createElement('div');
-      card.className='team-card'+(idx===0?' leader':'');
+    const hrs=elapsedHours();
+    const expected=hrs*RATE;
+    const diff=Math.round(parts-expected);
 
-      const info=document.createElement('div');
-      info.className='team-info';
+    let percent=Math.min(100,(parts/36000)*100);
+    prog.style.width=percent+"%";
 
-      const nameRow=document.createElement('div');
-      nameRow.className='team-name';
-      const rankBadge=document.createElement('span');
-      rankBadge.className='rank-badge';
-      rankBadge.textContent=`#${idx+1}`;
-      nameRow.appendChild(rankBadge);
-      const nameText=document.createElement('span');
-      nameText.textContent=team.name;
-      nameRow.appendChild(nameText);
-
-      const inputRow=document.createElement('div');
-      inputRow.className='input-row';
-      const totalInput=document.createElement('input');
-      totalInput.type='number';
-      totalInput.min=0;
-      totalInput.step=1;
-      totalInput.value=team.total;
-      totalInput.title='Enter total parts produced';
-
-      const updateBtn=document.createElement('button');
-      updateBtn.className='update-btn btn';
-      updateBtn.textContent='Update';
-      updateBtn.addEventListener('click',()=>{
-        const tot=Math.max(0,Number(totalInput.value)||0);
-        data[team.name].total=Math.round(tot);
-        data[team.name].lastUpdated=nowTimestamp();
-        saveData();
-        render();
-      });
-
-      inputRow.appendChild(totalInput);
-      inputRow.appendChild(updateBtn);
-
-      const meta=document.createElement('div');
-      meta.className='meta';
-
-      const progressWrap=document.createElement('div');
-      progressWrap.className='progress-wrap';
-      const progressBar=document.createElement('div');
-      progressBar.className='progress';
-      const progressFill=document.createElement('i');
-      let pct=Math.min(100,Math.round(team.total/DAILY_TARGET*100));
-      progressFill.style.width=pct+'%';
-      progressFill.style.backgroundColor=team.diffParts>=0?'#2e9b55':'#c0392b';
-      progressBar.appendChild(progressFill);
-      progressWrap.appendChild(progressBar);
-
-      const stats=document.createElement('div');
-      stats.style.flex='1';
-      stats.innerHTML=`<div><strong>${team.total.toLocaleString()}</strong> parts</div>`;
-
-      const statusWrap=document.createElement('div');
-      statusWrap.style.textAlign='right';
-      const status=document.createElement('div');
-      status.className='status';
-      if(team.elapsed<=0){
-        status.innerHTML='<span class="small">Before start</span>';
-      } else {
-        const diff=Math.abs(team.diffParts);
-        const mins=Math.abs(team.minutesAhead);
-        if(team.diffParts>=0){
-          status.innerHTML=`<span>✅ ${diff} parts ahead (~${mins} min ahead)</span>`;
-        } else {
-          status.innerHTML=`<span>❌ ${diff} parts behind (~${mins} min behind)</span>`;
-        }
-      }
-
-      const last=document.createElement('div');
-      last.className='small';
-      last.textContent='Last updated: '+formatNice(team.lastUpdated);
-
-      statusWrap.appendChild(status);
-      statusWrap.appendChild(last);
-
-      meta.appendChild(progressWrap);
-      meta.appendChild(stats);
-      meta.appendChild(statusWrap);
-
-      info.appendChild(nameRow);
-      info.appendChild(inputRow);
-      info.appendChild(meta);
-
-      card.appendChild(info);
-      board.appendChild(card);
-    });
-  }
-
-  document.getElementById('resetAll').addEventListener('click',()=>{
-    if(confirm('Reset all team data?')){
-      data=makeDefaultData();
-      saveData();
-      render();
+    if(diff>=0){
+        status.className="status ahead";
+        status.innerText=`Ahead by ${diff} parts`;
+        prog.style.background="green";
+    } else {
+        status.className="status behind";
+        status.innerText=`Behind by ${Math.abs(diff)} parts`;
+        prog.style.background="red";
     }
-  });
+}
 
-  document.getElementById('exportBtn').addEventListener('click',()=>{
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download='ultra_leaderboard.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  });
+["ULTRA1","ULTRA2","ULTRA3"].forEach(team=>{
+    db.ref("teams/"+team).on("value",snap=>{
+        if(!snap.exists()) return;
+        updateUI(team, snap.val());
+    });
 
-  render();
-})();
+    const box=document.querySelector(`[data-team="${team}"]`);
+    const input=box.querySelector(".parts");
+    const btn=box.querySelector("button");
+
+    btn.addEventListener("click",()=>{
+        const val=parseInt(input.value||0);
+        db.ref("teams/"+team).set(val);
+        input.value="";
+    });
+});
+
+setInterval(()=>{
+    ["ULTRA1","ULTRA2","ULTRA3"].forEach(team=>{
+        db.ref("teams/"+team).get().then(s=>{
+            if(s.exists()) updateUI(team,s.val());
+        });
+    });
+},180000);
 </script>
-<script src="enhanced.js"></script>
+
 </body>
 </html>
