@@ -166,7 +166,24 @@ function renderBoard(data){
 
    totals.forEach((team,idx)=>{
     let percent = Math.min(team.total / DAILY_TARGET *100,100);
-    let diff = team.total - DAILY_TARGET;
+    // Calculate expected output based on time of day
+const SHIFT_START_HOUR = 9;
+
+const now = new Date();
+const shiftStart = new Date();
+shiftStart.setHours(SHIFT_START_HOUR,0,0,0);
+
+// Hours worked since 09:00
+let elapsedHours = (now - shiftStart) / (1000*60*60);
+
+// Prevent negative numbers before shift starts
+elapsedHours = Math.max(0, Math.min(elapsedHours, 9));
+
+// Expected parts so far
+let expected = Math.floor(elapsedHours * 4000);
+
+// Difference vs expected at current time
+let diff = team.total - expected;
     let diffClass = diff>=0?"green":"red";
 
     const partsPerMinute = 4000 / 60;
