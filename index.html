@@ -220,11 +220,13 @@ let diff = team.total - expected;
     let direction = diff >= 0 ? "Ahead" : "Behind";
 
     html+=`
-    <div class="card">
-        <div>
-            <span class="rank">#${idx+1}</span>
-            <b>${team.name}</b>
-        </div><br>
+    <div class="card" style="position:relative;">
+    <div>
+        <span class="rank">#${idx+1}</span>
+        <span class="title ${team.name==="ULTRA1"?"blue":team.name==="ULTRA2"?"greenbg":"redbg"}">
+            ${team.name}
+        </span>
+    </div>
 
         <input type="number" id="${team.name}" value="${team.total}" ${unlocked?"":"disabled"}>
         <button onclick="save('${team.name}')" ${unlocked?"":"disabled"}>Update</button>
