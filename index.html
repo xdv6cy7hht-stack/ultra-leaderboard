@@ -235,6 +235,10 @@ let diff = team.total - expected;
             ${direction} by ${Math.abs(diff)} parts<br>
             (≈ ${timeLabel} ${direction.toLowerCase()})
         </p>
+        
+<p class="timestamp">
+    Last update: ${data[team.name]?.lastUpdated || "--"}
+</p>
 
         <progress value="${percent}" max="100"></progress>
 
