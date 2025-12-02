@@ -3,192 +3,204 @@
 <head>
 <meta charset="UTF-8">
 <title>ULTRA Production Leaderboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f8;
+    margin:0;
+    padding:15px;
+}
+
+h1{
+    text-align:center;
+}
+
+.card{
+    background:#fff;
+    border-radius:12px;
+    padding:15px;
+    margin:12px 0;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.rank{
+    background:#ddd;
+    border-radius:6px;
+    display:inline-block;
+    padding:4px 8px;
+    font-weight:bold;
+    margin-right:10px;
+}
+
+progress{
+    width:100%;
+    height:20px;
+}
+
+input{
+    width:80px;
+    padding:6px;
+    font-size:16px;
+}
+
+button{
+    padding:6px 12px;
+    font-size:16px;
+}
+
+.lock{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.lock input{
+    width:120px;
+    text-align:center;
+}
+
+.green{
+    color:#009900;
+    font-weight:bold;
+}
+
+.red{
+    color:#cc0000;
+    font-weight:bold;
+}
+
+.footer{
+    text-align:center;
+    color:#555;
+    margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>ULTRA Production Leaderboard</h1>
+
+<div class="lock">
+    <h3>Enter PIN to unlock editing</h3>
+    <input type="password" id="pinInput" placeholder="4-digit PIN" maxlength="4">
+    <button onclick="unlock()">Unlock</button>
+</div>
+
+<div id="board"></div>
+
+<div class="footer">
+Target: <b>4,000 parts/hr</b> • Daily target: <b>36,000 parts (9 hours)</b><br>
+Live sync across devices enabled.
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-<style>
-body {
-    font-family: Arial, sans-serif;
-    margin:0;
-    background:#f1f3f5;
-}
-header {
-    padding:16px;
-    text-align:center;
-}
-h1 {margin:4px;}
-.pin-box {
-    background:#eee;
-    padding:10px;
-    text-align:center;
-}
-.pin-box input {
-    width:120px;
-    font-size:18px;
-    text-align:center;
-}
-.container {
-    max-width:800px;
-    margin:0 auto;
-}
-.team {
-    background:#fff;
-    margin:12px;
-    padding:12px;
-    border-radius:10px;
-    box-shadow:0 2px 5px rgba(0,0,0,.1);
-}
-.team h2 {margin:0 0 6px;}
-input.parts {
-    width:140px;
-    font-size:18px;
-}
-button {
-    padding:6px 12px;
-    font-size:15px;
-}
-.progress-bar {
-    height:14px;
-    background:#ddd;
-    border-radius:7px;
-    overflow:hidden;
-    margin-top:8px;
-}
-.progress {
-    height:100%;
-    width:0%;
-    background:gray;
-}
-.status {
-    margin-top:6px;
-}
-.ahead { color:green; }
-.behind { color:red; }
-</style>
-</head>
-<body>
-
-<header>
-    <h1>ULTRA Production Leaderboard</h1>
-    <div>Target: 4,000 parts/hour • Daily target: 36,000</div>
-</header>
-
-<div class="pin-box">
-    🔐 Enter PIN to enable editing:
-    <input id="pinInput" type="number" maxlength="4">
-    <span id="pinStatus">Locked</span>
-</div>
-
-<div class="container">
-    <div class="team" data-team="ULTRA1">
-        <h2>ULTRA1</h2>
-        <input class="parts" type="number" placeholder="Total parts" disabled>
-        <button disabled>Update</button>
-        <div class="progress-bar"><div class="progress"></div></div>
-        <div class="status"></div>
-    </div>
-
-    <div class="team" data-team="ULTRA2">
-        <h2>ULTRA2</h2>
-        <input class="parts" type="number" placeholder="Total parts" disabled>
-        <button disabled>Update</button>
-        <div class="progress-bar"><div class="progress"></div></div>
-        <div class="status"></div>
-    </div>
-
-    <div class="team" data-team="ULTRA3">
-        <h2>ULTRA3</h2>
-        <input class="parts" type="number" placeholder="Total parts" disabled>
-        <button disabled>Update</button>
-        <div class="progress-bar"><div class="progress"></div></div>
-        <div class="status"></div>
-    </div>
-</div>
-
 <script>
-const PIN = "0711";
-const START_HOUR = 9;
-const RATE = 4000;
-
+/* 🔥 YOUR FIREBASE CONFIG */
 const firebaseConfig = {
-  apiKey: "AIzaSyBjEcJRy9C_WXJYhqLaBEZJ54ZwpEgH8qE",
-  authDomain: "ultra-production-board.firebaseapp.com",
-  projectId: "ultra-production-board",
-  storageBucket: "ultra-production-board.firebasestorage.app",
-  messagingSenderId: "1058393515822",
-  appId: "1:1058393515822:web:a706cdbc8c02cc0c0e3cbf",
-  measurementId: "G-ZV711XL81J"
+ apiKey: "AIzaSyBjEcJRy9C_WXJYhqLaBEZJ54ZwpEgH8qE",
+ authDomain: "ultra-production-board.firebaseapp.com",
+ projectId: "ultra-production-board",
+ storageBucket: "ultra-production-board.firebasestorage.app",
+ messagingSenderId: "1058393515822",
+ appId: "1:1058393515822:web:a706cdbc8c02cc0c0e3cbf"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const pinInput = document.getElementById("pinInput");
-const pinStatus = document.getElementById("pinStatus");
+/* SETTINGS */
+const PIN = "0711";
+const TARGET_HOURLY = 4000;
+const DAILY_TARGET = 36000;
 
-pinInput.addEventListener("input", ()=>{
-    if(pinInput.value === PIN){
-        document.querySelectorAll("input.parts,button").forEach(el=>el.disabled=false);
-        pinStatus.innerText="Unlocked ✅";
-        pinStatus.style.color="green";
-    }
-});
+let unlocked = false;
 
-function elapsedHours(){
-    const now = new Date();
-    const start = new Date();
-    start.setHours(START_HOUR,0,0,0);
-    return Math.max(0,(now-start)/36e5);
+const teams = [
+ {name:"ULTRA1"},
+ {name:"ULTRA2"},
+ {name:"ULTRA3"}
+];
+
+/* UNLOCK */
+function unlock(){
+   if(document.getElementById("pinInput").value === PIN){
+        unlocked = true;
+        document.querySelector(".lock").style.display="none";
+        loadBoard();
+   } else {
+        alert("Incorrect PIN");
+   }
 }
 
-function updateUI(team, parts){
-    const root=document.querySelector(`[data-team="${team}"]`);
-    const prog=root.querySelector(".progress");
-    const status=root.querySelector(".status");
-
-    const hrs=elapsedHours();
-    const expected=hrs*RATE;
-    const diff=Math.round(parts-expected);
-
-    let percent=Math.min(100,(parts/36000)*100);
-    prog.style.width=percent+"%";
-
-    if(diff>=0){
-        status.className="status ahead";
-        status.innerText=`Ahead by ${diff} parts`;
-        prog.style.background="green";
-    } else {
-        status.className="status behind";
-        status.innerText=`Behind by ${Math.abs(diff)} parts`;
-        prog.style.background="red";
-    }
+/* LOAD & LIVE SYNC */
+function loadBoard(){
+   const ref = db.ref("production");
+   ref.on("value", snapshot=>{
+      const data = snapshot.val() || {};
+      renderBoard(data);
+   });
 }
 
-["ULTRA1","ULTRA2","ULTRA3"].forEach(team=>{
-    db.ref("teams/"+team).on("value",snap=>{
-        if(!snap.exists()) return;
-        updateUI(team, snap.val());
-    });
+/* UPDATE DATA */
+function updateTeam(name,value){
+   db.ref("production/"+name).set({
+      total: Number(value),
+      time: Date.now()
+   });
+}
 
-    const box=document.querySelector(`[data-team="${team}"]`);
-    const input=box.querySelector(".parts");
-    const btn=box.querySelector("button");
+/* RENDER */
+function renderBoard(data){
 
-    btn.addEventListener("click",()=>{
-        const val=parseInt(input.value||0);
-        db.ref("teams/"+team).set(val);
-        input.value="";
-    });
-});
+   let totals = teams.map(t=>{
+        return {name:t.name, total:data[t.name]?.total || 0};
+   });
 
-setInterval(()=>{
-    ["ULTRA1","ULTRA2","ULTRA3"].forEach(team=>{
-        db.ref("teams/"+team).get().then(s=>{
-            if(s.exists()) updateUI(team,s.val());
-        });
-    });
-},180000);
+   totals.sort((a,b)=>b.total-a.total);
+
+   let html="";
+
+   totals.forEach((team,idx)=>{
+        let percent = Math.min(team.total / DAILY_TARGET *100,100);
+        let diff = team.total - DAILY_TARGET;
+        let diffClass = diff>=0?"green":"red";
+        let diffText = diff>=0?`+${diff}`:diff;
+
+        html+=`
+            <div class="card">
+                <div>
+                    <span class="rank">#${idx+1}</span>
+                    <b>${team.name}</b>
+                </div><br>
+
+                <input type="number" id="${team.name}" value="${team.total}" ${unlocked?"":"disabled"}>
+                <button onclick="save('${team.name}')"
+                  ${unlocked?"":"disabled"}>Update</button>
+
+                <p>
+                    <span class="${diffClass}">
+                    ${diffText} vs target
+                    </span>
+                </p>
+
+                <progress value="${percent}" max="100"></progress>
+
+                <p>${team.total} parts</p>
+            </div>
+        `;
+   });
+
+   document.getElementById("board").innerHTML = html;
+}
+
+function save(name){
+    let val = document.getElementById(name).value;
+    updateTeam(name,val);
+}
 </script>
 
 </body>
