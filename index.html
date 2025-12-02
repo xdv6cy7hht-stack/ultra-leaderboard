@@ -165,35 +165,47 @@ function renderBoard(data){
    let html="";
 
    totals.forEach((team,idx)=>{
-        let percent = Math.min(team.total / DAILY_TARGET *100,100);
-        let diff = team.total - DAILY_TARGET;
-        let diffClass = diff>=0?"green":"red";
-        let diffText = diff>=0?`+${diff}`:diff;
+    let percent = Math.min(team.total / DAILY_TARGET *100,100);
+    let diff = team.total - DAILY_TARGET;
+    let diffClass = diff>=0?"green":"red";
 
-        html+=`
-            <div class="card">
-                <div>
-                    <span class="rank">#${idx+1}</span>
-                    <b>${team.name}</b>
-                </div><br>
+    const partsPerMinute = 4000 / 60;
+    const minutes = Math.abs(diff) / partsPerMinute;
 
-                <input type="number" id="${team.name}" value="${team.total}" ${unlocked?"":"disabled"}>
-                <button onclick="save('${team.name}')"
-                  ${unlocked?"":"disabled"}>Update</button>
+    let timeLabel = "";
 
-                <p>
-                    <span class="${diffClass}">
-                    ${diffText} vs target
-                    </span>
-                </p>
+    if(minutes >= 60){
+        let h = Math.floor(minutes / 60);
+        let m = Math.round(minutes % 60);
+        timeLabel = `${h}h ${m}m`;
+    } else {
+        timeLabel = `${Math.round(minutes)} min`;
+    }
 
-                <progress value="${percent}" max="100"></progress>
+    let direction = diff >= 0 ? "Ahead" : "Behind";
 
-                <p>${team.total} parts</p>
-            </div>
-        `;
-   });
+    html+=`
+    <div class="card">
+        <div>
+            <span class="rank">#${idx+1}</span>
+            <b>${team.name}</b>
+        </div><br>
 
+        <input type="number" id="${team.name}" value="${team.total}" ${unlocked?"":"disabled"}>
+        <button onclick="save('${team.name}')" ${unlocked?"":"disabled"}>Update</button>
+        
+        <p class="${diffClass}">
+            ${direction} by ${Math.abs(diff)} parts<br>
+            (≈ ${timeLabel} ${direction.toLowerCase()})
+        </p>
+
+        <progress value="${percent}" max="100"></progress>
+
+        <p>${team.total} parts</p>
+    </div>
+    `;
+});
+    
    document.getElementById("board").innerHTML = html;
 }
 
