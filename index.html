@@ -120,6 +120,31 @@ button {
     .title {
     padding:8px 14px;
 }
+    #tinsel-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100px; /* height of the tinsel effect */
+  pointer-events: none; /* so it doesn't block clicks */
+  z-index: 1000;
+}
+
+.tinsel {
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 50px;
+  background: linear-gradient(to bottom, #ff0000, #ffff00, #00ff00); /* festive colors */
+  border-radius: 2px;
+  animation: swing 2s ease-in-out infinite alternate;
+}
+
+@keyframes swing {
+  0% { transform: rotate(-15deg); }
+  50% { transform: rotate(15deg); }
+  100% { transform: rotate(-15deg); }
+}
 </style>
 </head>
 
