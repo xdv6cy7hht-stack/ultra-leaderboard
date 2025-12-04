@@ -191,13 +191,19 @@ function loadBoard(){
 }
 
 /* UPDATE DATA */
-function updateTeam(name,value){
-   db.ref("production/"+name).set({
-      total: Number(value),
-      time: Date.now()
-   });
-}
+    function updateTeam(name,value){
 
+    const nowTime = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    db.ref("production/"+name).set({
+        total: Number(value),
+        lastUpdated: nowTime
+    });
+ }
+    
 /* RENDER */
 function renderBoard(data){
 
@@ -212,7 +218,7 @@ function renderBoard(data){
    totals.forEach((team,idx)=>{
     let percent = Math.min(team.total / DAILY_TARGET *100,100);
     // Calculate expected output based on time of day
-const SHIFT_START_HOUR = 9;
+const SHIFT_START_HOUR = 8;
 
 const now = new Date();
 const shiftStart = new Date();
