@@ -120,58 +120,42 @@ button {
     .title {
     padding:8px 14px;
 }
- #tinsel-container {
+#tinsel-container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 120px;
+  height: 150px;   /* taller container for sag */
   pointer-events: none;
   z-index: 1000;
 }
 
-.tinsel-garland {
+/* Garland segments */
+.tinsel-segment {
   position: absolute;
-  top: 0;
-  width: 100%;
-  height: 20px;
+  height: 25px;                 /* thick garland */
+  border-radius: 15px;
   background: linear-gradient(90deg, #ff0000 40%, #ff9900 60%, #ff0000 100%);
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(255,0,0,0.8);
+  box-shadow: 0 0 15px rgba(255,0,0,0.9);
+  transform-origin: top center;
 }
 
-/* Sagging effect using pseudo elements */
-.tinsel-garland::before,
-.tinsel-garland::after {
-  content: "";
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background: #ff0000;
+/* Sparkle dots */
+.tinsel-segment span {
+  display: block;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
+  background: gold;
+  position: absolute;
   top: 0;
+  animation: glitter 1s infinite ease-in-out;
 }
 
-/* Pins */
-.tinsel-garland::before { left: 5%; }
-.tinsel-garland::after { right: 5%; }
-
-/* Optional glitter sparkle animation */
 @keyframes glitter {
   0% { opacity: 0.5; }
   50% { opacity: 1; }
   100% { opacity: 0.5; }
-}
-
-.tinsel-garland span {
-  display: block;
-  width: 4px;
-  height: 4px;
-  background: gold;
-  border-radius: 50%;
-  position: absolute;
-  top: 0;
-  animation: glitter 1s infinite ease-in-out;
 }
 </style>
 </head>
@@ -347,22 +331,43 @@ function save(name){
 </script>
     
 <script>
-    const tinselContainer = document.getElementById('tinsel-container');
+    document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('tinsel-container');
 
-// Create a single garland across the top
-const garland = document.createElement('div');
-garland.classList.add('tinsel-garland');
+    const numSegments = 25;        // more segments = smoother garland
+    const width = container.offsetWidth;
 
-// Add small golden “glitter” dots randomly along garland
-for (let i = 0; i < 50; i++) {
-    const sparkle = document.createElement('span');
-    sparkle.style.left = `${Math.random() * 100}%`;
-    sparkle.style.animationDuration = `${0.5 + Math.random()}s`;
-    garland.appendChild(sparkle);
-}
+    // Pin points along the top in percentages
+    const pins = [0.05, 0.25, 0.5, 0.75, 0.95];
 
-tinselContainer.appendChild(garland);
+    for (let i = 0; i < numSegments; i++) {
+        const seg = document.createElement('div');
+        seg.classList.add('tinsel-segment');
 
+        // Position across the width
+        const leftPercent = i / (numSegments - 1);
+        seg.style.left = `${leftPercent * 100}%`;
+        seg.style.width = `${width / numSegments}px`;
+
+        // Wavy sag using sine, with higher amplitude for thick look
+        const sag = Math.sin(leftPercent * Math.PI * 2) * 35;  // 35px max sag
+        seg.style.top = `${40 + sag}px`;                        // base height + sag
+
+        // Slight rotation for natural effect
+        const rotation = (Math.random() - 0.5) * 15; // ±7.5 degrees
+        seg.style.transform = `rotate(${rotation}deg)`;
+
+        // Add multiple sparkles per segment
+        for (let j = 0; j < 5; j++) {
+            const sparkle = document.createElement('span');
+            sparkle.style.left = `${Math.random() * 100}%`;
+            sparkle.style.animationDuration = `${0.5 + Math.random()}s`;
+            seg.appendChild(sparkle);
+        }
+
+        container.appendChild(seg);
+    }
+});
 </script>
 </body>
 </html>
