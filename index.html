@@ -129,14 +129,23 @@ button {
   pointer-events: none; /* so it doesn't block clicks */
   z-index: 1000;
 }
-
 .tinsel {
   position: absolute;
   top: 0;
-  width: 4px;
-  height: 50px;
-  background: linear-gradient(to bottom, #ff0000, #ffff00, #00ff00); /* festive colors */
-  border-radius: 2px;
+  width: 2px; /* thinner for a realistic look */
+  height: 60px;
+  pointer-events: none;
+}
+
+.tinsel span {
+  display: block;
+  width: 100%;
+  height: 2px; /* thin sparkle segment */
+  margin-bottom: 2px;
+  border-radius: 1px;
+  background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #ffffff);
+  opacity: 0.8;
+  transform-origin: top center;
   animation: swing 2s ease-in-out infinite alternate;
 }
 
@@ -319,8 +328,8 @@ function save(name){
 </script>
     
 <script>
-const tinselContainer = document.getElementById('tinsel-container');
-const tinselCount = 30; // number of tinsel strands
+    const tinselContainer = document.getElementById('tinsel-container');
+const tinselCount = 30;
 
 for (let i = 0; i < tinselCount; i++) {
     const tinsel = document.createElement('div');
@@ -329,11 +338,23 @@ for (let i = 0; i < tinselCount; i++) {
     // Random horizontal position
     tinsel.style.left = `${Math.random() * 100}%`;
 
-    // Random length
-    tinsel.style.height = `${30 + Math.random() * 50}px`;
+    // Random height
+    const height = 40 + Math.random() * 60;
+    tinsel.style.height = `${height}px`;
 
     // Random swing speed
-    tinsel.style.animationDuration = `${1 + Math.random() * 2}s`;
+    const swingSpeed = 1 + Math.random() * 2;
+
+    // Create multiple small sparkles
+    const segments = Math.floor(height / 4);
+    for (let j = 0; j < segments; j++) {
+        const spark = document.createElement('span');
+        spark.style.animationDuration = `${swingSpeed}s`;
+        // Randomly vary color brightness
+        const colors = ["#ff0000","#00ff00","#ffff00","#ffffff","#ff99cc","#00ffff"];
+        spark.style.background = colors[Math.floor(Math.random() * colors.length)];
+        tinsel.appendChild(spark);
+    }
 
     tinselContainer.appendChild(tinsel);
 }
