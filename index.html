@@ -147,9 +147,11 @@ button {
 }
 </style>
 </head>
-
+    
 <body>
-
+    
+<div id="tinsel-container"></div>
+    
 <h1>ULTRA Production Leaderboard</h1>
 
 <div class="lock">
@@ -315,6 +317,26 @@ function save(name){
     updateTeam(name,val);
 }
 </script>
+    
+<script>
+const tinselContainer = document.getElementById('tinsel-container');
+const tinselCount = 30; // number of tinsel strands
 
+for (let i = 0; i < tinselCount; i++) {
+    const tinsel = document.createElement('div');
+    tinsel.classList.add('tinsel');
+
+    // Random horizontal position
+    tinsel.style.left = `${Math.random() * 100}%`;
+
+    // Random length
+    tinsel.style.height = `${30 + Math.random() * 50}px`;
+
+    // Random swing speed
+    tinsel.style.animationDuration = `${1 + Math.random() * 2}s`;
+
+    tinselContainer.appendChild(tinsel);
+}
+</script>
 </body>
 </html>
