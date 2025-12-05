@@ -162,66 +162,67 @@ body.dark {
 #darkToggle{
     font-size:14px;
 }
-/* ===========================
-   CHRISTMAS GARLAND HEADER
-   =========================== */
-
 #tinsel-container{
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 180px;
-    pointer-events: none;
-    z-index: 1000;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:180px;
+    pointer-events:none;
+    z-index:2000;
 }
 
-/* MULTI LINE TINSEL */
-.garland-line{
-    position: absolute;
-    width: 100%;
-    height: 6px;
-    border-radius: 20px;
-    filter: drop-shadow(0 0 6px rgba(255,255,255,0.6));
-    background-size: 200% 100%;
-    animation: sparkle 2s linear infinite;
+/* ===== SVG TINSEL ===== */
+svg{
+    position:absolute;
+    width:100%;
+    height:140px;
 }
 
-.red    { background: linear-gradient(90deg, #ff0000, #ffe066); }
-.green  { background: linear-gradient(90deg, #00cc44, #ffffff); }
-.gold   { background: linear-gradient(90deg, #ffcc00, #fff4b0); }
-
-@keyframes sparkle {
-    from { background-position: 0% 0%; }
-    to   { background-position: 100% 0%; }
+/* animated glitter stroke */
+.tinsel-path{
+    fill:none;
+    stroke-width:6;
+    stroke-linecap:round;
+    filter:drop-shadow(0 0 5px rgba(255,255,255,0.4));
+    stroke-dasharray:10 5;
+    animation:sparkle 3s linear infinite;
 }
 
-/* BAUBLES */
-.bauble{
-    position: absolute;
-    width: 42px;
-    height: 52px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #ffffff 5%, #ff3366 40%, #aa0022 80%);
-    box-shadow: 0 0 12px rgba(0,0,0,0.3) inset;
+@keyframes sparkle{
+    to{ stroke-dashoffset:-200; }
 }
 
-/* STRING */
+.red{ stroke:#ff0000; }
+.green{ stroke:#00dd55; }
+.gold{ stroke:#ffd24a; }
+
+/* ===== BAUBLES ===== */
+.swing-wrapper{
+    position:absolute;
+    transform-origin: top center;
+    animation:swing ease-in-out infinite alternate;
+}
+
+@keyframes swing{
+   from{ transform:rotate(-8deg);}
+   to{   transform:rotate(8deg);}
+}
+
 .string{
-    position: absolute;
-    width: 2px;
-    background: black;
-    transform-origin: top;
+    width:2px;
+    background:#000;
+    margin:0 auto;
 }
 
-/* INCLUDE SWING */
-.swing{
-    animation: swing 4s ease-in-out infinite alternate;
-}
-
-@keyframes swing {
-    0%   { transform: rotate(-8deg); }
-    100% { transform: rotate(8deg); }
+.bauble{
+    border-radius:50%;
+    margin:0 auto;
+    background:
+      radial-gradient(circle at 35% 30%, #fff 5%, var(--c1) 40%, var(--c2) 85%);
+    box-shadow:
+      inset -2px -4px 8px rgba(0,0,0,0.3),
+      0 0 6px rgba(255,255,255,0.25);
 }
 </style>
 </head>
@@ -410,73 +411,88 @@ function save(name){
 </script>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", ()=>{
 
-    const container = document.getElementById("tinsel-container");
+const container = document.getElementById("tinsel-container");
 
-    /* ===== CREATE WAVY TINSEL LINES ===== */
+/* ========== SVG TINSEL CURVES ========== */
 
-    function createGarland(top, colorClass, sag){
-        const segments = 30;
-        const containerWidth = container.offsetWidth;
+function createGarland(colorClass, sag){
 
-        for(let i = 0; i < segments; i++){
-            const line = document.createElement("div");
-            line.classList.add("garland-line", colorClass);
+    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
 
-            const left = (i / segments) * 100;
-            const wave = Math.sin((i / segments) * Math.PI * 2) * sag;
+    const h = 120;
+    const s = sag;
 
-            line.style.top = top + wave + "px";
-            line.style.left = left + "%";
-            line.style.width = (100 / segments) + "%";
+    // Deep drooping bezier
+    const d = `
+        M 0 ${30}
+        Q 25 ${30+s}
+          50 ${30}
+        T 100 ${30}
+    `;
+    
+    path.setAttribute("d", d);
+    path.setAttribute("class", `tinsel-path ${colorClass}`);
 
-            container.appendChild(line);
-        }
-    }
+    svg.setAttribute("viewBox","0 0 100 140");
+    svg.appendChild(path);
+    container.appendChild(svg);
+}
 
-    /* THREE LAYERS LIKE YOUR SKETCH */
-    createGarland(30, "red",   20);
-    createGarland(55, "green", 25);
-    createGarland(80, "gold",  30);
+createGarland("red",   50);
+createGarland("green",65);
+createGarland("gold", 80);
 
-    /* ===== CREATE BAUBLES & STRINGS ===== */
+/* ========== BAUBLES ========== */
 
-    const baubleColors = [
-        "radial-gradient(circle at 35% 30%, #ffffff 5%, #ff3366 40%, #aa0022 80%)",
-        "radial-gradient(circle at 35% 30%, #ffffff 5%, #6a5acd 40%, #2a1873 80%)",
-        "radial-gradient(circle at 35% 30%, #ffffff 5%, #f4b400 40%, #a36c00 80%)"
-    ];
+const colors = [
+  ["#ff3366","#a1002b"],
+  ["#6f6bff","#2d1b7b"],
+  ["#ffd24a","#a77300"]
+];
 
-    const baubleCount = 7;
+const totalBaubles = 9;
 
-    for(let i=0;i<baubleCount;i++){
+for(let i=0;i<totalBaubles;i++){
 
-        const x = 10 + i * (80 / baubleCount);
-        const drop = 100 + Math.random()*25;
+    const wrap = document.createElement("div");
+    wrap.className="swing-wrapper";
 
-        const string = document.createElement("div");
-        string.className = "string swing";
-        string.style.left = x + "%";
-        string.style.top = "0";
-        string.style.height = drop + "px";
+    // position across screen
+    const x = 6 + i * (85/totalBaubles);
+    wrap.style.left = x+"%";
 
-        const bauble = document.createElement("div");
-        bauble.className = "bauble swing";
-        bauble.style.left = `calc(${x}% - 20px)`;
-        bauble.style.top = drop + "px";
+    // random height
+    const drop = 55 + Math.random()*45;
 
-        bauble.style.background =
-            baubleColors[Math.floor(Math.random()*baubleColors.length)];
+    wrap.style.top = "0px";
 
-        /* varying swing timing */
-        const swingSpeed = 3 + Math.random()*2;
-        bauble.style.animationDuration = swingSpeed + "s";
-        string.style.animationDuration = swingSpeed + "s";
+    // animation timing
+    wrap.style.animationDuration = (3+Math.random()*2)+"s";
 
-        container.appendChild(string);
-        container.appendChild(bauble);
-    }
+    // string
+    const string = document.createElement("div");
+    string.className="string";
+    string.style.height=drop+"px";
+
+    // bauble
+    const bauble=document.createElement("div");
+    bauble.className="bauble";
+
+    const size = 26+Math.random()*12;
+    bauble.style.width=size+"px";
+    bauble.style.height=size+"px";
+
+    const c = colors[Math.floor(Math.random()*colors.length)];
+    bauble.style.setProperty("--c1", c[0]);
+    bauble.style.setProperty("--c2", c[1]);
+
+    wrap.appendChild(string);
+    wrap.appendChild(bauble);
+    container.appendChild(wrap);
+}
 
 });
 </script>
