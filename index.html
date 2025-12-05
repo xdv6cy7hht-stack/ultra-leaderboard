@@ -422,21 +422,21 @@ function createGarland(colorClass, sag){
     const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
     const path = document.createElementNS("http://www.w3.org/2000/svg","path");
 
-    const h = 120;
+    const h = 140;
     const s = sag;
 
     // Deep drooping bezier
     const d = `
-        M 0 ${30}
-        Q 25 ${30+s}
-          50 ${30}
-        T 100 ${30}
+        M 0 ${35}
+        Q 250 ${35+s}
+          500 ${35}
+        T 1000 ${35}
     `;
     
     path.setAttribute("d", d);
     path.setAttribute("class", `tinsel-path ${colorClass}`);
 
-    svg.setAttribute("viewBox","0 0 100 140");
+    svg.setAttribute("viewBox","0 0 1000 140");
     svg.appendChild(path);
     container.appendChild(svg);
 }
