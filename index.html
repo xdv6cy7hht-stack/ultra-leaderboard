@@ -13,8 +13,12 @@ body{
     padding:15px;
 }
 
-h1{
-    text-align:center;
+h1{text-align:center;}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 }
 
 .card{
@@ -25,159 +29,80 @@ h1{
     box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
+/* ===== BOARD ===== */
+
 .rank{
     background:#ddd;
     border-radius:6px;
     display:inline-block;
     padding:4px 8px;
     font-weight:bold;
-    margin-right:10px;
-    color:#fff;
 }
-progress {
+
+.blue{background:#2979ff;color:#fff;}
+.greenbg{background:#43a047;color:#fff;}
+.redbg{background:#e53935;color:#fff;}
+
+progress{
     width:100%;
     height:18px;
-    border-radius:10px;
-    overflow:hidden;
 }
-progress::-webkit-progress-bar {
-    background:#ddd;
-    border-radius:10px;
+
+/* ===== DARK MODE ===== */
+
+body.dark{
+    background:#121212;
+    color:#eee;
 }
-progress::-webkit-progress-value {
-    background:#2979ff;
-    border-radius:10px;
+.dark .card{background:#1e1e1e;}
+.dark input,.dark button{
+    background:#333;
+    color:#fff;
+    border-color:#555;
 }
+
+/* ===== INPUTS ===== */
 
 input{
     width:80px;
     padding:6px;
-    font-size:16px;
 }
-
-button {
+button{
     padding:7px 12px;
     border-radius:6px;
-    border:1px solid #ccc;
-    background:#fff;
-    font-size:14px;
-    cursor:pointer;
 }
 
-.lock{
-    text-align:center;
-    margin-bottom:20px;
-}
+.lock{text-align:center;margin-bottom:20px;}
+.input-row{display:flex;gap:10px;align-items:center;}
 
-.lock input{
-    width:120px;
-    text-align:center;
-}
+.green{color:#00cc5a;font-weight:bold;}
+.red{color:#ff4a4a;font-weight:bold;}
 
-.green{
-    color:#009900;
-    font-weight:bold;
-}
-
-.red{
-    color:#cc0000;
-    font-weight:bold;
-}
-
-.footer{
-    text-align:center;
-    color:#555;
-    margin-top:20px;
-}
-    .title {
-    padding: 5px 10px;
-    border-radius: 5px;
-    color: white;
-    display: inline-block;
-    font-size:14px;
-}
-
-.blue { background:#2979ff; }
-.greenbg { background:#43a047; }
-.redbg { background:#e53935; }
-
-.timestamp {
-    position: absolute;
-    top:8px;
-    right:10px;
+.timestamp{
     font-size:11px;
-    color:#666;
-}
-    .input-row {
-    display:flex;
-    gap:10px;
-    align-items:center;
-}
-    .card {
-    transition:0.15s;
-}
-.card:hover {
-    transform:scale(1.01);
-}
-    .title {
-    padding:8px 14px;
-}
-   /* ===================== */
-/* DARK MODE STYLES */
-/* ===================== */
-
-body.dark {
-    background:#121212;
-    color:#e0e0e0;
+    color:#777;
+    position:absolute;
+    right:10px;
+    top:8px;
 }
 
-.dark .card {
-    background:#1e1e1e;
-    box-shadow:none;
-}
-
-.dark input,
-.dark button {
-    background:#2a2a2a;
-    color:white;
-    border-color:#555;
-}
-
-.dark progress::-webkit-progress-bar {
-    background:#333;
-}
-
-.dark .timestamp {
-    color:#aaa;
-}
-
-.dark .percent-label {
-    color:#bbb;
-} 
-    .header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-#darkToggle{
-    font-size:14px;
-    
-}
 /* ===== BAUBLES ===== */
+
 .swing-wrapper{
     position:absolute;
+    top:0;
     transform-origin: top center;
     animation:swing ease-in-out infinite alternate;
 }
 
 @keyframes swing{
-   from{ transform:rotate(-8deg);}
-   to{   transform:rotate(8deg);}
+    from{transform:rotate(-6deg);}
+    to{transform:rotate(6deg);}
 }
 
 .string{
     width:2px;
-    background:#000;
+    background:rgba(0,0,0,0.7);
     margin:0 auto;
 }
 
@@ -185,316 +110,199 @@ body.dark {
     border-radius:50%;
     margin:0 auto;
     background:
-      radial-gradient(circle at 35% 30%, #fff 5%, var(--c1) 40%, var(--c2) 85%);
+      radial-gradient(circle at 35% 30%, #fff 5%, var(--c1) 35%, var(--c2) 80%);
     box-shadow:
-      inset -2px -4px 8px rgba(0,0,0,0.3),
-      0 0 6px rgba(255,255,255,0.25);
+        inset -2px -4px 8px rgba(0,0,0,.35),
+        0 0 7px rgba(255,255,255,.35);
 }
-    /* ❄️ SNOW LAYER */
+
+/* ===== SNOW ===== */
+
 #snow{
     position:fixed;
-    top:0;
-    left:0;
-    width:100vw;
-    height:100vh;
+    inset:0;
     pointer-events:none;
-    overflow:hidden;
-    z-index:5;
+    z-index:999;
 }
 
 .snowflake{
     position:absolute;
     top:-10px;
-    width:6px;
-    height:6px;
     background:white;
     border-radius:50%;
-    opacity:0.8;
-    filter: blur(0.5px);
-
-    animation:
-        fall linear infinite,
-        drift ease-in-out infinite;
+    filter: blur(.4px);
+    opacity:.9;
+    animation:fall linear infinite, drift ease-in-out infinite;
 }
 
 @keyframes fall{
-    from{ transform: translateY(-10px); }
-    to{ transform: translateY(110vh); }
+    to{transform:translateY(110vh);}
 }
 
 @keyframes drift{
-    0%,100% { transform: translateX(0); }
-    50%     { transform: translateX(20px); }
+    0%,100%{margin-left:0;}
+    50%{margin-left:25px;}
 }
-    
 </style>
 </head>
-    
+
 <body>
 
 <div id="snow"></div>
-    
+
 <div class="header">
     <h1>ULTRA Production Leaderboard</h1>
-    <button id="darkToggle" onclick="toggleDark()">🌙 Dark Mode</button>
+    <button onclick="toggleDark()">🌙 Dark Mode</button>
 </div>
 
 <div class="lock">
-    <h3>Enter PIN to unlock editing</h3>
-    <input type="password" id="pinInput" placeholder="4-digit PIN" maxlength="4">
-    <button onclick="unlock()">Unlock</button>
+<h3>Enter PIN to unlock editing</h3>
+<input type="password" id="pinInput" maxlength="4">
+<button onclick="unlock()">Unlock</button>
 </div>
 
 <div id="board"></div>
 
-<div class="footer">
-Target: <b>4,000 parts/hr</b> • Daily target: <b>36,000 parts (9 hours)</b><br>
-Live sync across devices enabled.
+<div class="footer" style="text-align:center;color:#777;">
+Target: <b>4,000 parts/hr</b> • Daily target: <b>36,000 parts</b>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-/* 🔥 YOUR FIREBASE CONFIG */
-const firebaseConfig = {
+firebase.initializeApp({
  apiKey: "AIzaSyBjEcJRy9C_WXJYhqLaBEZJ54ZwpEgH8qE",
  authDomain: "ultra-production-board.firebaseapp.com",
  projectId: "ultra-production-board",
  storageBucket: "ultra-production-board.firebasestorage.app",
  messagingSenderId: "1058393515822",
  appId: "1:1058393515822:web:a706cdbc8c02cc0c0e3cbf"
-};
+});
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
-/* SETTINGS */
-const PIN = "0711";
-const TARGET_HOURLY = 4000;
-const DAILY_TARGET = 36000;
+const PIN="0711";
+const DAILY_TARGET=36000;
+let unlocked=false;
 
-let unlocked = false;
+const teams=["ULTRA1","ULTRA2","ULTRA3"];
 
-const teams = [
- {name:"ULTRA1"},
- {name:"ULTRA2"},
- {name:"ULTRA3"}
-];
+function toggleDark(){
+    document.body.classList.toggle("dark");
+}
 
-/* UNLOCK */
 function unlock(){
-   if(document.getElementById("pinInput").value === PIN){
-        unlocked = true;
+    if(pinInput.value===PIN){
+        unlocked=true;
         document.querySelector(".lock").style.display="none";
         loadBoard();
-   } else {
-        alert("Incorrect PIN");
-   }
+    } else alert("Wrong PIN");
 }
 
-/* LOAD & LIVE SYNC */
 function loadBoard(){
-   const ref = db.ref("production");
-   ref.on("value", snapshot=>{
-      const data = snapshot.val() || {};
-      renderBoard(data);
-   });
-}
-
-/* UPDATE DATA */
-    function updateTeam(name,value){
-
-    const nowTime = new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit"
+    db.ref("production").on("value",s=>{
+        renderBoard(s.val()||{});
     });
-
-    db.ref("production/"+name).set({
-        total: Number(value),
-        lastUpdated: nowTime
-    });
- }
-    function toggleDark(){
-
-    document.body.classList.toggle("dark");
-
-    const mode = document.body.classList.contains("dark") ? "dark" : "light";
-    localStorage.setItem("mode", mode);
-}
-    
-/* RENDER */
-function renderBoard(data){
-
-   let totals = teams.map(t=>{
-        return {name:t.name, total:data[t.name]?.total || 0};
-   });
-
-   totals.sort((a,b)=>b.total-a.total);
-
-   let html="";
-
-   totals.forEach((team,idx)=>{
-    let percent = Math.min(team.total / DAILY_TARGET *100,100);
-    // Calculate expected output based on time of day
-const SHIFT_START_HOUR = 9;
-
-const now = new Date();
-const shiftStart = new Date();
-shiftStart.setHours(SHIFT_START_HOUR,0,0,0);
-
-// Hours worked since 09:00
-let elapsedHours = (now - shiftStart) / (1000*60*60);
-
-// Prevent negative numbers before shift starts
-elapsedHours = Math.max(0, Math.min(elapsedHours, 9));
-
-// Expected parts so far
-let expected = Math.floor(elapsedHours * 4000);
-
-// Difference vs expected at current time
-let diff = team.total - expected;
-    let diffClass = diff>=0?"green":"red";
-
-    const partsPerMinute = 4000 / 60;
-    const minutes = Math.abs(diff) / partsPerMinute;
-
-    let timeLabel = "";
-
-    if(minutes >= 60){
-        let h = Math.floor(minutes / 60);
-        let m = Math.round(minutes % 60);
-        timeLabel = `${h}h ${m}m`;
-    } else {
-        timeLabel = `${Math.round(minutes)} min`;
-    }
-
-    let direction = diff >= 0 ? "Ahead" : "Behind";
-
-    html+=`
-    <div class="card" style="position:relative;">
-    <div>
-        <span class="rank">#${idx+1}</span>
-        <span class="title ${team.name==="ULTRA1"?"blue":team.name==="ULTRA2"?"greenbg":"redbg"}">
-            ${team.name}
-        </span>
-    </div>
-
-<div class="input-row">
-    <input type="number" id="${team.name}" value="${team.total}" ${unlocked?"":"disabled"}>
-    <button onclick="save('${team.name}')" ${unlocked?"":"disabled"}>Update</button>
-</div>
-    
-        <p class="${diffClass}">
-            ${direction} by ${Math.abs(diff)} parts<br>
-            (≈ ${timeLabel} ${direction.toLowerCase()})
-        </p>
-        
-<p class="timestamp">
-    Last update: ${data[team.name]?.lastUpdated || "--"}
-</p>
-
-        <progress value="${percent}" max="100"></progress>
-
-        <p>${team.total} parts</p>
-    </div>
-    `;
-});
-    
-   document.getElementById("board").innerHTML = html;
 }
 
 function save(name){
-    let val = document.getElementById(name).value;
-    updateTeam(name,val);
+    db.ref("production/"+name).set({
+        total:+document.getElementById(name).value,
+        lastUpdated:new Date().toLocaleTimeString([],{
+            hour:"2-digit",
+            minute:"2-digit"
+        })
+    });
 }
-    if(localStorage.getItem("mode")==="dark"){
-    document.body.classList.add("dark");
+
+function renderBoard(data){
+
+    const totals=teams.map(t=>({name:t,total:data[t]?.total||0}))
+                      .sort((a,b)=>b.total-a.total);
+
+    board.innerHTML="";
+
+    totals.forEach((team,i)=>{
+
+        const pct=Math.min(team.total/DAILY_TARGET*100,100);
+
+        board.innerHTML+=`
+<div class="card" style="position:relative">
+<span class="rank">#${i+1}</span>
+<span class="${team.name=="ULTRA1"?"blue":team.name=="ULTRA2"?"greenbg":"redbg"}">${team.name}</span>
+
+<div class="input-row">
+<input id="${team.name}" type="number" value="${team.total}" ${unlocked?"":"disabled"}>
+<button onclick="save('${team.name}')" ${unlocked?"":"disabled"}>Update</button>
+</div>
+
+<progress value="${pct}" max="100"></progress>
+
+<p>${team.total} parts</p>
+
+<p class="timestamp">
+Last update: ${data[team.name]?.lastUpdated||"--"}
+</p>
+</div>`;
+    });
+
 }
-</script>
 
-<script>
-document.addEventListener("DOMContentLoaded", ()=>{
+/* ===== BAUBLES ===== */
 
-const container = document.getElementById("tinsel-container");
+const colors=[["#ff3366","#a1002b"],["#ffd24a","#a77300"],
+              ["#44ffaa","#007c43"],["#7b6bff","#281d88"]];
 
-/* ========== BAUBLES ========== */
-
-const colors = [
-  ["#ff3366","#a1002b"],
-  ["#6f6bff","#2d1b7b"],
-  ["#ffd24a","#a77300"]
-];
-
-const totalBaubles = 9;
-
-for(let i=0;i<totalBaubles;i++){
-
-    const wrap = document.createElement("div");
+for(let i=0;i<9;i++){
+    const wrap=document.createElement("div");
     wrap.className="swing-wrapper";
 
-    // position across screen
-    const x = 6 + i * (85/totalBaubles);
-    wrap.style.left = x+"%";
+    wrap.style.left=(5+i*(90/9))+"%";
+    wrap.style.animationDuration=(3+Math.random()*2)+"s";
 
-    // random height
-    const drop = 55 + Math.random()*45;
+    const d=40+Math.random()*60;
 
-    wrap.style.top = "0px";
+    const s=document.createElement("div");
+    s.className="string";
+    s.style.height=d+"px";
 
-    // animation timing
-    wrap.style.animationDuration = (3+Math.random()*2)+"s";
+    const b=document.createElement("div");
+    b.className="bauble";
 
-    // string
-    const string = document.createElement("div");
-    string.className="string";
-    string.style.height=drop+"px";
+    const size=20+Math.random()*15;
+    b.style.width=b.style.height=size+"px";
 
-    // bauble
-    const bauble=document.createElement("div");
-    bauble.className="bauble";
+    const c=colors[Math.floor(Math.random()*colors.length)];
+    b.style.setProperty("--c1",c[0]);
+    b.style.setProperty("--c2",c[1]);
 
-    const size = 26+Math.random()*12;
-    bauble.style.width=size+"px";
-    bauble.style.height=size+"px";
-
-    const c = colors[Math.floor(Math.random()*colors.length)];
-    bauble.style.setProperty("--c1", c[0]);
-    bauble.style.setProperty("--c2", c[1]);
-
-    wrap.appendChild(string);
-    wrap.appendChild(bauble);
-    container.appendChild(wrap);
+    wrap.appendChild(s);
+    wrap.appendChild(b);
+    document.body.appendChild(wrap);
 }
-<script>
-const snow = document.getElementById("snow");
 
-function spawnSnow(){
+/* ===== SNOW ===== */
 
-    const flake = document.createElement("div");
-    flake.className = "snowflake";
+const snow=document.getElementById("snow");
 
-    const size = Math.random() * 5 + 2;
-    flake.style.width  = size + "px";
-    flake.style.height = size + "px";
+setInterval(()=>{
+    const flake=document.createElement("div");
+    flake.className="snowflake";
 
-    flake.style.left = Math.random() * 100 + "vw";
+    const size=Math.random()*5+2;
+    flake.style.width=flake.style.height=size+"px";
+    flake.style.left=Math.random()*100+"vw";
 
-    const speed = Math.random() * 6 + 5;
-    flake.style.animationDuration = speed+"s, 3s";
-
-    flake.style.opacity = Math.random() * 0.6 + 0.4;
+    const speed=Math.random()*6+5;
+    flake.style.animationDuration=speed+"s,3s";
 
     snow.appendChild(flake);
 
-    setTimeout(()=>{
-        flake.remove();
-    }, (speed + 2)*1000);
-}
+    setTimeout(()=>flake.remove(),(speed+1)*1000);
+},90);
 
-// continuous snowfall
-setInterval(spawnSnow, 110);
-    
 </script>
+
 </body>
 </html>
