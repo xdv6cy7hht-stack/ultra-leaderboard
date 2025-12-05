@@ -162,42 +162,66 @@ body.dark {
 #darkToggle{
     font-size:14px;
 }
-#tinsel-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 150px;   /* taller container for sag */
-  pointer-events: none;
-  z-index: 1000;
+/* ===========================
+   CHRISTMAS GARLAND HEADER
+   =========================== */
+
+#tinsel-container{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 180px;
+    pointer-events: none;
+    z-index: 1000;
 }
 
-/* Garland segments */
-.tinsel-segment {
-  position: absolute;
-  height: 25px;                 /* thick garland */
-  border-radius: 15px;
-  background: linear-gradient(90deg, #ff0000 40%, #ff9900 60%, #ff0000 100%);
-  box-shadow: 0 0 15px rgba(255,0,0,0.9);
-  transform-origin: top center;
+/* MULTI LINE TINSEL */
+.garland-line{
+    position: absolute;
+    width: 100%;
+    height: 6px;
+    border-radius: 20px;
+    filter: drop-shadow(0 0 6px rgba(255,255,255,0.6));
+    background-size: 200% 100%;
+    animation: sparkle 2s linear infinite;
 }
 
-/* Sparkle dots */
-.tinsel-segment span {
-  display: block;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: gold;
-  position: absolute;
-  top: 0;
-  animation: glitter 1s infinite ease-in-out;
+.red    { background: linear-gradient(90deg, #ff0000, #ffe066); }
+.green  { background: linear-gradient(90deg, #00cc44, #ffffff); }
+.gold   { background: linear-gradient(90deg, #ffcc00, #fff4b0); }
+
+@keyframes sparkle {
+    from { background-position: 0% 0%; }
+    to   { background-position: 100% 0%; }
 }
 
-@keyframes glitter {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
+/* BAUBLES */
+.bauble{
+    position: absolute;
+    width: 42px;
+    height: 52px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff 5%, #ff3366 40%, #aa0022 80%);
+    box-shadow: 0 0 12px rgba(0,0,0,0.3) inset;
+}
+
+/* STRING */
+.string{
+    position: absolute;
+    width: 2px;
+    background: black;
+    transform-origin: top;
+}
+
+/* INCLUDE SWING */
+.swing{
+    animation: swing 4s ease-in-out infinite alternate;
+}
+
+@keyframes swing {
+    0%   { transform: rotate(-8deg); }
+    100% { transform: rotate(8deg); }
 }
 </style>
 </head>
@@ -384,44 +408,76 @@ function save(name){
     document.body.classList.add("dark");
 }
 </script>
-    
+
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('tinsel-container');
+document.addEventListener("DOMContentLoaded", () => {
 
-    const numSegments = 25;        // more segments = smoother garland
-    const width = container.offsetWidth;
+    const container = document.getElementById("tinsel-container");
 
-    // Pin points along the top in percentages
-    const pins = [0.05, 0.25, 0.5, 0.75, 0.95];
+    /* ===== CREATE WAVY TINSEL LINES ===== */
 
-    for (let i = 0; i < numSegments; i++) {
-        const seg = document.createElement('div');
-        seg.classList.add('tinsel-segment');
+    function createGarland(top, colorClass, sag){
+        const segments = 30;
+        const containerWidth = container.offsetWidth;
 
-        // Position across the width
-        const leftPercent = i / (numSegments - 1);
-        seg.style.left = `${leftPercent * 100}%`;
-        seg.style.width = `${width / numSegments}px`;
+        for(let i = 0; i < segments; i++){
+            const line = document.createElement("div");
+            line.classList.add("garland-line", colorClass);
 
-        // Wavy sag using sine, with higher amplitude for thick look
-        const sag = Math.sin(leftPercent * Math.PI * 2) * 35;  // 35px max sag
-        seg.style.top = `${40 + sag}px`;                        // base height + sag
+            const left = (i / segments) * 100;
+            const wave = Math.sin((i / segments) * Math.PI * 2) * sag;
 
-        // Slight rotation for natural effect
-        const rotation = (Math.random() - 0.5) * 15; // ±7.5 degrees
-        seg.style.transform = `rotate(${rotation}deg)`;
+            line.style.top = top + wave + "px";
+            line.style.left = left + "%";
+            line.style.width = (100 / segments) + "%";
 
-        // Add multiple sparkles per segment
-        for (let j = 0; j < 5; j++) {
-            const sparkle = document.createElement('span');
-            sparkle.style.left = `${Math.random() * 100}%`;
-            sparkle.style.animationDuration = `${0.5 + Math.random()}s`;
-            seg.appendChild(sparkle);
+            container.appendChild(line);
         }
-
-        container.appendChild(seg);
     }
+
+    /* THREE LAYERS LIKE YOUR SKETCH */
+    createGarland(30, "red",   20);
+    createGarland(55, "green", 25);
+    createGarland(80, "gold",  30);
+
+    /* ===== CREATE BAUBLES & STRINGS ===== */
+
+    const baubleColors = [
+        "radial-gradient(circle at 35% 30%, #ffffff 5%, #ff3366 40%, #aa0022 80%)",
+        "radial-gradient(circle at 35% 30%, #ffffff 5%, #6a5acd 40%, #2a1873 80%)",
+        "radial-gradient(circle at 35% 30%, #ffffff 5%, #f4b400 40%, #a36c00 80%)"
+    ];
+
+    const baubleCount = 7;
+
+    for(let i=0;i<baubleCount;i++){
+
+        const x = 10 + i * (80 / baubleCount);
+        const drop = 100 + Math.random()*25;
+
+        const string = document.createElement("div");
+        string.className = "string swing";
+        string.style.left = x + "%";
+        string.style.top = "0";
+        string.style.height = drop + "px";
+
+        const bauble = document.createElement("div");
+        bauble.className = "bauble swing";
+        bauble.style.left = `calc(${x}% - 20px)`;
+        bauble.style.top = drop + "px";
+
+        bauble.style.background =
+            baubleColors[Math.floor(Math.random()*baubleColors.length)];
+
+        /* varying swing timing */
+        const swingSpeed = 3 + Math.random()*2;
+        bauble.style.animationDuration = swingSpeed + "s";
+        string.style.animationDuration = swingSpeed + "s";
+
+        container.appendChild(string);
+        container.appendChild(bauble);
+    }
+
 });
 </script>
 </body>
