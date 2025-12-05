@@ -161,42 +161,8 @@ body.dark {
 }
 #darkToggle{
     font-size:14px;
+    
 }
-#tinsel-container{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:180px;
-    pointer-events:none;
-    z-index:2000;
-}
-
-/* ===== SVG TINSEL ===== */
-svg{
-    position:absolute;
-    width:100%;
-    height:140px;
-}
-
-/* animated glitter stroke */
-.tinsel-path{
-    fill:none;
-    stroke-width:6;
-    stroke-linecap:round;
-    filter:drop-shadow(0 0 5px rgba(255,255,255,0.4));
-    stroke-dasharray:10 5;
-    animation:sparkle 3s linear infinite;
-}
-
-@keyframes sparkle{
-    to{ stroke-dashoffset:-200; }
-}
-
-.red{ stroke:#ff0000; }
-.green{ stroke:#00dd55; }
-.gold{ stroke:#ffd24a; }
-
 /* ===== BAUBLES ===== */
 .swing-wrapper{
     position:absolute;
@@ -224,13 +190,50 @@ svg{
       inset -2px -4px 8px rgba(0,0,0,0.3),
       0 0 6px rgba(255,255,255,0.25);
 }
+    /* ❄️ SNOW LAYER */
+#snow{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:5;
+}
+
+.snowflake{
+    position:absolute;
+    top:-10px;
+    width:6px;
+    height:6px;
+    background:white;
+    border-radius:50%;
+    opacity:0.8;
+    filter: blur(0.5px);
+
+    animation:
+        fall linear infinite,
+        drift ease-in-out infinite;
+}
+
+@keyframes fall{
+    from{ transform: translateY(-10px); }
+    to{ transform: translateY(110vh); }
+}
+
+@keyframes drift{
+    0%,100% { transform: translateX(0); }
+    50%     { transform: translateX(20px); }
+}
+    
 </style>
 </head>
     
 <body>
-    
-<div id="tinsel-container"></div>
 
+<div id="snow"></div>
+    
 <div class="header">
     <h1>ULTRA Production Leaderboard</h1>
     <button id="darkToggle" onclick="toggleDark()">🌙 Dark Mode</button>
@@ -415,36 +418,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
 const container = document.getElementById("tinsel-container");
 
-/* ========== SVG TINSEL CURVES ========== */
-
-function createGarland(colorClass, sag){
-
-    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
-    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-
-    const h = 140;
-    const s = sag;
-
-    // Deep drooping bezier
-    const d = `
-        M 0 ${35}
-        Q 250 ${35+s}
-          500 ${35}
-        T 1000 ${35}
-    `;
-    
-    path.setAttribute("d", d);
-    path.setAttribute("class", `tinsel-path ${colorClass}`);
-
-    svg.setAttribute("viewBox","0 0 2000 140");
-    svg.appendChild(path);
-    container.appendChild(svg);
-}
-
-createGarland("red",   50);
-createGarland("green",65);
-createGarland("gold", 80);
-
 /* ========== BAUBLES ========== */
 
 const colors = [
@@ -493,8 +466,35 @@ for(let i=0;i<totalBaubles;i++){
     wrap.appendChild(bauble);
     container.appendChild(wrap);
 }
+<script>
+const snow = document.getElementById("snow");
 
-});
+function spawnSnow(){
+
+    const flake = document.createElement("div");
+    flake.className = "snowflake";
+
+    const size = Math.random() * 5 + 2;
+    flake.style.width  = size + "px";
+    flake.style.height = size + "px";
+
+    flake.style.left = Math.random() * 100 + "vw";
+
+    const speed = Math.random() * 6 + 5;
+    flake.style.animationDuration = speed+"s, 3s";
+
+    flake.style.opacity = Math.random() * 0.6 + 0.4;
+
+    snow.appendChild(flake);
+
+    setTimeout(()=>{
+        flake.remove();
+    }, (speed + 2)*1000);
+}
+
+// continuous snowfall
+setInterval(spawnSnow, 110);
+    
 </script>
 </body>
 </html>
