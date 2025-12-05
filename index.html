@@ -120,6 +120,46 @@ button {
     .title {
     padding:8px 14px;
 }
+   /* ===================== */
+/* DARK MODE STYLES */
+/* ===================== */
+
+body.dark {
+    background:#121212;
+    color:#e0e0e0;
+}
+
+.dark .card {
+    background:#1e1e1e;
+    box-shadow:none;
+}
+
+.dark input,
+.dark button {
+    background:#2a2a2a;
+    color:white;
+    border-color:#555;
+}
+
+.dark progress::-webkit-progress-bar {
+    background:#333;
+}
+
+.dark .timestamp {
+    color:#aaa;
+}
+
+.dark .percent-label {
+    color:#bbb;
+} 
+    .header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+#darkToggle{
+    font-size:14px;
+}
 #tinsel-container {
   position: fixed;
   top: 0;
@@ -163,8 +203,11 @@ button {
 <body>
     
 <div id="tinsel-container"></div>
-    
-<h1>ULTRA Production Leaderboard</h1>
+
+<div class="header">
+    <h1>ULTRA Production Leaderboard</h1>
+    <button id="darkToggle" onclick="toggleDark()">🌙 Dark Mode</button>
+</div>
 
 <div class="lock">
     <h3>Enter PIN to unlock editing</h3>
@@ -242,6 +285,13 @@ function loadBoard(){
         lastUpdated: nowTime
     });
  }
+    function toggleDark(){
+
+    document.body.classList.toggle("dark");
+
+    const mode = document.body.classList.contains("dark") ? "dark" : "light";
+    localStorage.setItem("mode", mode);
+}
     
 /* RENDER */
 function renderBoard(data){
@@ -327,6 +377,9 @@ let diff = team.total - expected;
 function save(name){
     let val = document.getElementById(name).value;
     updateTeam(name,val);
+}
+    if(localStorage.getItem("mode")==="dark"){
+    document.body.classList.add("dark");
 }
 </script>
     
