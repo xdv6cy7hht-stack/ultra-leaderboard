@@ -279,17 +279,15 @@ function renderBoard(data){
     const now = new Date();
 
     // ===== SHIFT TIMING =====
-    const START_HOUR = 9;               // <-- 8am start as requested
+    const START_HOUR = 9;               
     const TARGET_PER_HOUR = 4000;
     const TARGET_PER_MIN = TARGET_PER_HOUR / 60;
 
     const shiftStart = new Date();
     shiftStart.setHours(START_HOUR,0,0,0);
 
-    // Minutes elapsed since shift start
     let minsElapsed = Math.max(0,(now - shiftStart) / 60000);
 
-    // Expected parts by this time of day
     const expectedSoFar = minsElapsed * TARGET_PER_MIN;
 
     // ===== TOTALS =====
@@ -302,6 +300,7 @@ function renderBoard(data){
 
     board.innerHTML = "";
 
+    // ========= BUILD HTML FIRST =========
     totals.forEach((team,i)=>{
 
         const pct = Math.min(team.total / DAILY_TARGET * 100, 100);
@@ -322,10 +321,10 @@ function renderBoard(data){
             ? `Ahead by ${Math.round(diff)} parts`
             : `Behind by ${Math.round(Math.abs(diff))} parts`;
 
-        // ===== HTML OUTPUT =====
         board.innerHTML += `
 <div class="card" style="position:relative">
     <span class="rank">#${i+1}</span>
+
     <span class="${
             team.name=="ULTRA1" ? "blue" :
             team.name=="ULTRA2" ? "greenbg" :
@@ -333,8 +332,15 @@ function renderBoard(data){
         }">${team.name}</span>
 
     <div class="input-row">
-        <input id="${team.name}" type="number" value="${team.total}" ${unlocked?"":"disabled"}>
-        <button onclick="save('${team.name}')" ${unlocked?"":"disabled"}>Update</button>
+        <input id="${team.name}"
+               type="number"
+               value="${team.total}"
+               ${unlocked?"":"disabled"}>
+
+        <button onclick="save('${team.name}')"
+                ${unlocked?"":"disabled"}>
+            Update
+        </button>
     </div>
 
     <div class="diff ${diffClass}">
@@ -344,19 +350,25 @@ function renderBoard(data){
 
     <progress value="${pct}" max="100"></progress>
 
-<div class="gauge">
-    <div class="needle" id="needle-${team.name}"></div>
-</div>
-<p class="speed-text" id="speed-${team.name}">-- pph</p>
+    <div class="gauge">
+        <div class="needle" id="needle-${team.name}"></div>
+    </div>
+
+    <p class="speed-text" id="speed-${team.name}">-- pph</p>
 
     <p>${team.total} parts</p>
 
     <p class="timestamp">
         Last update: ${team.lastUpdated}
     </p>
-</div>`;  
-updateGauge(team.name, team.total);
+</div>`;
     });
+
+    // ========= UPDATE SPEEDOMETERS AFTER DOM EXISTS =========
+    totals.forEach(team=>{
+        updateGauge(team.name, team.total);
+    });
+
 }
 
 /* ===== BAUBLES ===== */
