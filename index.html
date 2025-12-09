@@ -216,38 +216,83 @@ function save(name){
         })
     });
 }
-
 function renderBoard(data){
 
-    const totals=teams.map(t=>({name:t,total:data[t]?.total||0}))
-                      .sort((a,b)=>b.total-a.total);
+    const now = new Date();
 
-    board.innerHTML="";
+    // ===== SHIFT TIMING =====
+    const START_HOUR = 8;               // <-- 8am start as requested
+    const TARGET_PER_HOUR = 4000;
+    const TARGET_PER_MIN = TARGET_PER_HOUR / 60;
+
+    const shiftStart = new Date();
+    shiftStart.setHours(START_HOUR,0,0,0);
+
+    // Minutes elapsed since shift start
+    let minsElapsed = Math.max(0,(now - shiftStart) / 60000);
+
+    // Expected parts by this time of day
+    const expectedSoFar = minsElapsed * TARGET_PER_MIN;
+
+    // ===== TOTALS =====
+    const totals = teams.map(t=>({
+        name: t,
+        total: data[t]?.total || 0,
+        lastUpdated: data[t]?.lastUpdated || "--"
+    }))
+    .sort((a,b)=> b.total - a.total);
+
+    board.innerHTML = "";
 
     totals.forEach((team,i)=>{
 
-        const pct=Math.min(team.total/DAILY_TARGET*100,100);
+        const pct = Math.min(team.total / DAILY_TARGET * 100, 100);
 
-        board.innerHTML+=`
+        // ===== AHEAD / BEHIND CALC =====
+        const diff = team.total - expectedSoFar;
+        const diffClass = diff >= 0 ? "green" : "red";
+
+        const absMins = Math.abs(diff) / TARGET_PER_MIN;
+        const h = Math.floor(absMins / 60);
+        const m = Math.round(absMins % 60);
+
+        const timeText = h > 0
+            ? `≈ ${h}h ${m}m ${diff >= 0 ? "ahead" : "behind"}`
+            : `≈ ${m} min ${diff >= 0 ? "ahead" : "behind"}`;
+
+        const diffText = diff >= 0
+            ? `Ahead by ${Math.round(diff)} parts`
+            : `Behind by ${Math.round(Math.abs(diff))} parts`;
+
+        // ===== HTML OUTPUT =====
+        board.innerHTML += `
 <div class="card" style="position:relative">
-<span class="rank">#${i+1}</span>
-<span class="${team.name=="ULTRA1"?"blue":team.name=="ULTRA2"?"greenbg":"redbg"}">${team.name}</span>
+    <span class="rank">#${i+1}</span>
+    <span class="${
+            team.name=="ULTRA1" ? "blue" :
+            team.name=="ULTRA2" ? "greenbg" :
+            "redbg"
+        }">${team.name}</span>
 
-<div class="input-row">
-<input id="${team.name}" type="number" value="${team.total}" ${unlocked?"":"disabled"}>
-<button onclick="save('${team.name}')" ${unlocked?"":"disabled"}>Update</button>
-</div>
+    <div class="input-row">
+        <input id="${team.name}" type="number" value="${team.total}" ${unlocked?"":"disabled"}>
+        <button onclick="save('${team.name}')" ${unlocked?"":"disabled"}>Update</button>
+    </div>
 
-<progress value="${pct}" max="100"></progress>
+    <div class="diff ${diffClass}">
+        ${diffText}<br>
+        (${timeText})
+    </div>
 
-<p>${team.total} parts</p>
+    <progress value="${pct}" max="100"></progress>
 
-<p class="timestamp">
-Last update: ${data[team.name]?.lastUpdated||"--"}
-</p>
+    <p>${team.total} parts</p>
+
+    <p class="timestamp">
+        Last update: ${team.lastUpdated}
+    </p>
 </div>`;
     });
-
 }
 
 /* ===== BAUBLES ===== */
