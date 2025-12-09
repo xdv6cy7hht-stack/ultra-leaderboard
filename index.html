@@ -221,7 +221,7 @@ function renderBoard(data){
     const now = new Date();
 
     // ===== SHIFT TIMING =====
-    const START_HOUR = 8;               // <-- 8am start as requested
+    const START_HOUR = 9;               // <-- 8am start as requested
     const TARGET_PER_HOUR = 4000;
     const TARGET_PER_MIN = TARGET_PER_HOUR / 60;
 
@@ -347,6 +347,45 @@ setInterval(()=>{
 
     setTimeout(()=>flake.remove(),(speed+1)*1000);
 },90);
+
+// ===============================
+// AUTO RESET BOARD AT 7AM DAILY
+// ===============================
+
+function autoResetCheck() {
+
+    const now = new Date();
+
+    const hour = now.getHours();
+    const min = now.getMinutes();
+
+    // Get today's date string
+    const today = now.toDateString();
+
+    // Prevent multiple resets in same day
+    const alreadyReset = localStorage.getItem("lastReset");
+
+    // Reset at exactly 7:00 AM
+    if(hour === 7 && min === 0 && alreadyReset !== today) {
+
+        teams.forEach(team => {
+            db.ref("production/" + team).set({
+                total: 0,
+                lastUpdated: new Date().toLocaleTimeString()
+            });
+        });
+
+        localStorage.setItem("lastReset", today);
+
+        console.log("✅ Daily reset complete");
+    }
+}
+
+// Check every minute
+setInterval(autoResetCheck, 60000);
+
+// Run once on page load
+autoResetCheck();
 
 </script>
 
