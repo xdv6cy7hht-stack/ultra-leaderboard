@@ -217,6 +217,50 @@ progress{
     margin:2px 0 0 0;
     text-align:center;
 }
+    /* Falling snow */
+#snow-container{
+    pointer-events:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    z-index:0;
+}
+
+/* Ground accumulation */
+#snow-ground{
+    pointer-events:none;
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100vw;
+    height:2px;
+    background:linear-gradient(#fff,#e5e5e5);
+    transition:height 1.5s linear;
+    z-index:1;
+}
+
+/* Individual snowflakes */
+flake{
+    position:absolute;
+    color:white;
+    user-select:none;
+    pointer-events:none;
+    animation: fall linear forwards;
+}
+
+@keyframes fall{
+    from{
+        transform: translateY(-10px);
+        opacity:1;
+    }
+    to{
+        transform: translateY(100vh);
+        opacity:0;
+    }
+}
 </style>
 </head>
 
@@ -498,6 +542,45 @@ setInterval(()=>{
     setTimeout(()=>flake.remove(),(speed+1)*1000);
 },90);
 
+const SHIFT_START = 9;               // 9am
+const SHIFT_HOURS = 9;              // 9 hour shift
+const MAX_SNOW_HEIGHT = 10;         // 10vh
+
+function spawnSnowflake(){
+    const flake=document.createElement("flake");
+
+    flake.textContent="❄";
+    flake.style.left=Math.random()*100+"vw";
+    flake.style.fontSize=(Math.random()*10+10)+"px";
+    flake.style.animationDuration=(Math.random()*5+6)+"s";
+
+    document.getElementById("snow-container").appendChild(flake);
+
+    setTimeout(()=>flake.remove(),10000);
+}
+
+setInterval(spawnSnowflake,350);
+
+/* ---------- ACCUMULATION ---------- */
+
+function updateSnowBuildUp(){
+
+    const now=new Date();
+
+    const start=new Date();
+    start.setHours(SHIFT_START,0,0,0);
+
+    let minsElapsed = Math.max(0,(now - start)/60000);
+    let pct = Math.min(minsElapsed / (SHIFT_HOURS*60),1);
+
+    let heightVH = pct * MAX_SNOW_HEIGHT;
+
+    document.getElementById("snow-ground").style.height = heightVH+"vh";
+}
+
+setInterval(updateSnowBuildUp,60000);
+updateSnowBuildUp();
+
 // ===============================
 // AUTO RESET BOARD AT 7AM DAILY
 // ===============================
@@ -539,5 +622,8 @@ autoResetCheck();
 
 </script>
 
+<div id="snow-container"></div>
+<div id="snow-ground"></div>
+    
 </body>
 </html>
