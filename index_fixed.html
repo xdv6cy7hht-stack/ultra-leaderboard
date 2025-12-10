@@ -208,19 +208,6 @@ button{
     z-index:0;
 }
 
-/* Ground accumulation */
-#snow-ground{
-    pointer-events:none;
-    position:fixed;
-    bottom:0;
-    left:0;
-    width:100vw;
-    height:2px;
-    background:linear-gradient(#fff,#e5e5e5);
-    transition:height 1.5s linear;
-    z-index:1;
-}
-
 /* Individual snowflakes */
 flake{
     position:absolute;
@@ -244,8 +231,6 @@ flake{
 </head>
 
 <body>
-
-<div id="snow"></div>
 
 <div class="header">
     <h1>ULTRA Production Leaderboard</h1>
@@ -385,18 +370,8 @@ function renderBoard(data){
         (${timeText})
     </div>
 
-<div class="progress-row">
-
     <progress value="${pct}" max="100"></progress>
-
-    <div>
-        <div class="gauge">
-            <div class="needle" id="needle-${team.name}"></div>
-        </div>
-        <p class="speed-text" id="speed-${team.name}">-- pph</p>
-    </div>
-
-</div>
+    
     <p>${team.total} parts</p>
 
     <p class="timestamp">
@@ -437,26 +412,6 @@ for(let i=0;i<9;i++){
     wrap.appendChild(b);
     document.body.appendChild(wrap);
 }
-
-/* ===== SNOW ===== */
-
-const snow=document.getElementById("snow");
-
-setInterval(()=>{
-    const flake=document.createElement("div");
-    flake.className="snowflake";
-
-    const size=Math.random()*5+2;
-    flake.style.width=flake.style.height=size+"px";
-    flake.style.left=Math.random()*100+"vw";
-
-    const speed=Math.random()*6+5;
-    flake.style.animationDuration=speed+"s,3s";
-
-    snow.appendChild(flake);
-
-    setTimeout(()=>flake.remove(),(speed+1)*1000);
-},90);
 
 const SHIFT_START = 9;               // 9am
 const SHIFT_HOURS = 9;              // 9 hour shift
