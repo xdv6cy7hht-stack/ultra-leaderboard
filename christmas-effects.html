@@ -75,26 +75,30 @@
    SNOW GROUND DRIFT
 ================================ */
 
-#snow-ground{
-    pointer-events:none;
-    position:fixed;
-    bottom:0;
-    left:0;
-    width:100vw;
-    height:2px;
-    overflow:hidden;
-    z-index:2;
-    transition:height 1.5s ease-out;
+#snow-ground {
+    pointer-events: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 0;
+    overflow: visible;
+    z-index: 2;
+    transition: height 1.5s ease-out;
 }
 
-.snow-layer{
-    position:absolute;
-    width:200%;
-    height:100%;
-    border-radius:50%;
+/* snow drift shape */
+.snow-layer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0; /* gives a soft curved slope */
+    background: linear-gradient(to top, #fff, #f0f0f0 60%, #ddd 100%);
     filter: blur(2px);
+    pointer-events: none;
 }
-
+   
 .layer1{
     bottom:5px;
     background:linear-gradient(90deg,#fff,#f9f9f9,#fff);
@@ -202,24 +206,36 @@ const SHIFT_START = 9;
 const SHIFT_HOURS = 9;
 const MAX_SNOW_HEIGHT = 10;
 
+const MAX_SNOW_HEIGHT = 15; // max snow height in vh
+
 function updateSnowBuildUp(){
+    const now = new Date();
+    const SHIFT_START = 9; // 9am
+    const SHIFT_HOURS = 9; // 9-hour shift
 
-    const now=new Date();
-
-    const start=new Date();
+    const start = new Date();
     start.setHours(SHIFT_START,0,0,0);
 
     let minsElapsed = Math.max(0,(now - start)/60000);
     let pct = Math.min(minsElapsed / (SHIFT_HOURS*60),1);
 
     let heightVH = pct * MAX_SNOW_HEIGHT;
+    const snowGround = document.getElementById("snow-ground");
+    snowGround.style.height = heightVH + "vh";
 
-    document.getElementById("snow-ground").style.height = heightVH+"vh";
+    // optional: add slight horizontal slope by skewing the layer
+    const layer = snowGround.querySelector(".snow-layer");
+    if(layer){
+        layer.style.transform = `skewX(${5 - 10*pct}deg)`; // subtle slope changing with buildup
+    }
 }
-
 setInterval(updateSnowBuildUp,60000);
 updateSnowBuildUp();
 </script>
-
+   
+<div id="snow-ground">
+    <div class="snow-layer"></div>
+</div>
+   
 </body>
 </html>
