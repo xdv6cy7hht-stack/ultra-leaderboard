@@ -196,79 +196,6 @@ button{
     0%,100%{margin-left:0;}
     50%{margin-left:25px;}
 }
-    /* SPEEDOMETER */
-
-.gauge {
-    width: 140px;
-    height: 70px;
-    border: 5px solid #ccc;
-    border-bottom: none;
-    border-radius: 140px 140px 0 0;
-    margin: 10px auto 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.needle {
-    width: 3px;
-    height: 65px;
-    background: red;
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform-origin: bottom center;
-    transform: rotate(-90deg);
-    transition: 0.6s ease;
-}
-
-.speed-text {
-    text-align: center;
-    font-weight: bold;
-    margin: 4px 0;
-}
-    /* ===== PROGRESS BAR ROW ===== */
-.progress-row{
-    display:flex;
-    align-items:center;
-    gap:18px;
-}
-
-/* Shorter thicker bar */
-progress{
-    width:60%;
-    height:16px;
-}
-
-/* ===== SPEED GAUGE ===== */
-.gauge{
-    width:70px;
-    height:35px;
-    border:2px solid #aaa;
-    border-top-left-radius:70px;
-    border-top-right-radius:70px;
-    border-bottom:none;
-    position:relative;
-    overflow:hidden;
-}
-
-.needle{
-    width:2px;
-    height:38px;
-    background:red;
-    position:absolute;
-    bottom:0;
-    left:50%;
-    transform-origin:bottom center;
-    transform:rotate(-90deg);
-    transition:0.6s ease-out;
-}
-
-/* text below gauge */
-.speed-text{
-    font-size:0.8em;
-    margin:2px 0 0 0;
-    text-align:center;
-}
     /* Falling snow */
 #snow-container{
     pointer-events:none;
@@ -375,35 +302,6 @@ function loadBoard(){
         renderBoard(s.val()||{});
     });
 }
-function updateGauge(team, total) {
-
-    const hoursWorked = getWorkHours(); // you already calculate this
-
-    // Parts per hour current speed
-    const speed = hoursWorked > 0 ? Math.round(total / hoursWorked) : 0;
-
-    const maxSpeed = 5000;   // needle max
-    const limited = Math.min(speed, maxSpeed);
-
-    // Convert to needle angle (-90 to +90 degrees)
-    const angle = ((limited / maxSpeed) * 180) - 90;
-
-    // Apply needle
-    const needle = document.getElementById("needle-" + team);
-    if(needle) needle.style.transform = `rotate(${angle}deg)`;
-
-    // Colour logic
-    if(speed >= 4000){
-        needle.style.background = "lime";
-    } else if (speed >= 3500){
-        needle.style.background = "gold";
-    } else {
-        needle.style.background = "red";
-    }
-
-    // Display text
-    document.getElementById("speed-" + team).innerText = `${speed} pph`;
-}
 function save(name){
     db.ref("production/"+name).set({
         total:+document.getElementById(name).value,
@@ -507,40 +405,6 @@ function renderBoard(data){
 </div>`;
     });
 
-    // ========= UPDATE SPEEDOMETERS AFTER DOM EXISTS =========
-    totals.forEach(team=>{
-        updateGauge(team.name, team.total);
-    });
-
-}
-function updateGauge(team,total){
-
-    const needle=document.getElementById("needle-"+team);
-    const speedText=document.getElementById("speed-"+team);
-
-    if(!needle) return;
-
-    const now=new Date();
-
-    const shiftStart=new Date();
-    shiftStart.setHours(START_HOUR,0,0,0);
-
-    const minsElapsed=Math.max(1,(now-shiftStart)/60000);
-    const hours=minsElapsed/60;
-
-    // Parts per hour
-    const pph=Math.round(total / hours);
-
-    speedText.textContent = `${pph} pph`;
-
-    // Needle rotation
-    // Map 0–6000 pph across -90° to +90°
-    let angle=(pph/6000)*180 - 90;
-
-    angle=Math.max(-90,Math.min(90,angle));
-
-    needle.style.transform=`rotate(${angle}deg)`;
-}
 /* ===== BAUBLES ===== */
 
 const colors=[["#ff3366","#a1002b"],["#ffd24a","#a77300"],
