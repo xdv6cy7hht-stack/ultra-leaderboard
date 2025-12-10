@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ULTRA Production Leaderboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+/* ---------- Base UI ---------- */
+:root{
+  --bg:#f4f6f8;
+  --card:#fff;
+  --muted:#777;
+  --accent:#2979ff;
+}
+body{
+  margin:0;
+  font-family:Arial,helvetica,sans-serif;
+  background:var(--bg);
+  color:#111;
+  padding:14px;
+}
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+h1{margin:0;font-size:20px}
+.controls{display:flex;gap:8px;align-items:center}
+.card{
+  background:var(--card);
+  border-radius:12px;
+  padding:12px;
+  margin:12px 0;
+  box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  position:relative;
+}
+.rank{
+  background:#ddd;
+  border-radius:6px;
+  display:inline-block;
+  padding:4px 8px;
+  font-weight:700;
+  color:#111;
+}
+.title-badge{padding:6px 10px;border-radius:6px;color:#fff;display:inline-block;margin-left:10px;font-weight:700}
+.blue{background:#2979ff}
+.greenbg{background:#43a047}
+.redbg{background:#e53935}
+
+/* input row */
+.input-row{display:flex;gap:8px;align-items:center;margin-top:10px}
+input[type=number]{width:110px;padding:8px;border-radius:6px;border:1px solid #ccc;font-size:15px}
+button{padding:8px 12px;border-radius:8px;border:1px solid #cfcfcf;background:#fff;cursor:pointer;font-size:14px}
+
+/* progress */
+progress{width:100%;height:16px;border-radius:10px;overflow:hidden;-webkit-appearance:none;margin-top:10px}
+progress::-webkit-progress-bar{background:#e6e6e6;border-radius:10px}
+progress::-webkit-progress-value{background:var(--accent);border-radius:10px}
+
+/* diff text */
+.diff{margin-top:8px;font-weight:700}
+.green{color:#0a8c3a}
+.red{color:#d32f2f}
+
+/* timestamp in corner */
+.timestamp{position:absolute;right:12px;top:10px;font-size:12px;color:var(--muted)}
+
+/* footer */
+.footer{color:var(--muted);text-align:center;margin-top:10px;font-size:13px}
+
+/* dark mode */
+body.dark{background:#0f1113;color:#e8e8e8}
+body.dark .card{background:#1d1f22;box-shadow:none}
+body.dark input, body.dark button{background:#222;color:#eee;border:1px solid #333}
+body.dark progress::-webkit-progress-value{background:#4caf50}
+body.dark .rank{color:#fff}
+
+/* ----- baubles (decorative) ----- */
+.swing-wrapper{position:absolute;top:-6px;transform-origin:top center;animation:swing 3.5s ease-in-out infinite alternate;z-index:3}
+@keyframes swing{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
+.string{width:2px;background:#FFC000;margin:0 auto}
+.bauble{border-radius:50%;margin:6px auto;background:radial-gradient(circle at 35% 30%, #fff 5%, #ff6b6b 35%, #a1002b 80%);width:28px;height:28px;box-shadow:inset -2px -4px 8px rgba(0,0,0,.35),0 0 7px rgba(255,255,255,.25)}
+
+/* ----- Snow containers (theme) ----- */
+#snow-container{pointer-events:none;position:fixed;top:0;left:0;width:100vw;height:100vh;overflow:hidden;z-index:2;display:none}
+#snow-ground{pointer-events:none;position:fixed;bottom:0;left:0;width:100vw;height:2px;overflow:hidden;z-index:2;transition:height 1.2s ease-out;display:none}
+.snow-layer{position:absolute;width:200%;height:100%;border-radius:50%;filter:blur(2px)}
+.layer1{bottom:5px;background:linear-gradient(90deg,#fff,#f9f9f9,#fff);opacity:.95;animation:wave 25s linear infinite}
+.layer2{bottom:0;background:linear-gradient(90deg,#eee,#ddd,#eee);opacity:.8;animation:wave 35s linear infinite reverse}
+.layer3{bottom:-6px;background:linear-gradient(90deg,#ddd,#cfcfcf,#ddd);opacity:.6;animation:wave 45s linear infinite}
+@keyframes wave{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.snowflake{position:absolute;top:-10px;background:transparent;color:white;font-size:14px;filter:drop-shadow(0 0 2px rgba(255,255,255,.6));animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh);opacity:0}}
+
+/* helper */
+.center-note{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+.small{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ULTRA Production Leaderboard</h1>
+  <div class="controls">
+    <button id="darkBtn">🌙</button>
+    <button id="christmasToggle">🎄</button>
+  </div>
+</div>
+
+<div class="lock">
+  <h3>Enter PIN to unlock editing</h3>
+  <input id="pinInput" type="password" maxlength="4" placeholder="4-digit PIN" />
+  <button id="unlockBtn">Unlock</button>
+</div>
+
+<div id="board"></div>
+
+<div class="footer">
+  Target: <b>4,000 parts/hr</b> • Daily target: <b>36,000 parts</b>
+</div>
+
+<!-- snow theme elements -->
+<div id="snow-container"><!-- flakes inserted here --></div>
+<div id="snow-ground">
+  <div class="snow-layer layer1"></div>
+  <div class="snow-layer layer2"></div>
+  <div class="snow-layer layer3"></div>
+</div>
+
+<!-- firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+/* ---------- CONFIG ---------- */
+const firebaseConfig = {
+ apiKey: "AIzaSyBjEcJRy9C_WXJYhqLaBEZJ54ZwpEgH8qE",
+ authDomain: "ultra-production-board.firebaseapp.com",
+ projectId: "ultra-production-board",
+ storageBucket: "ultra-production-board.firebasestorage.app",
+ messagingSenderId: "1058393515822",
+ appId: "1:1058393515822:web:a706cdbc8c02cc0c0e3cbf"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const PIN = "0711";
+const DAILY_TARGET = 36000;
+const START_HOUR = 9;   // shift start
+const TEAMS = ["ULTRA1","ULTRA2","ULTRA3"];
+
+/* state */
+let unlocked = false;
+let latestData = {}; // last data snapshot
+
+/* elements */
+const board = document.getElementById("board");
+const pinInput = document.getElementById("pinInput");
+const unlockBtn = document.getElementById("unlockBtn");
+const darkBtn = document.getElementById("darkBtn");
+const christmasToggle = document.getElementById("christmasToggle");
+const snowContainer = document.getElementById("snow-container");
+const snowGround = document.getElementById("snow-ground");
+
+/* ---------- UI helpers ---------- */
+function formatTimeFromString(t){
+  if(!t) return "--";
+  return t;
+}
+
+/* ---------- RENDER ---------- */
+function renderBoard(data){
+  latestData = data || {};
+  const now = new Date();
+
+  const TARGET_PER_HOUR = 4000;
+  const TARGET_PER_MIN = TARGET_PER_HOUR/60;
+
+  // shift start
+  const shiftStart = new Date();
+  shiftStart.setHours(START_HOUR,0,0,0);
+  let minsElapsed = Math.max(0, (now - shiftStart)/60000);
+  minsElapsed = Math.min(minsElapsed, 9*60); // cap to 9 hours
+
+  const expectedSoFar = minsElapsed * TARGET_PER_MIN;
+
+  // totals array
+  const totals = TEAMS.map(name=>({
+    name,
+    total: (data && data[name] && Number(data[name].total)) || 0,
+    lastUpdated: (data && data[name] && data[name].lastUpdated) || "--"
+  })).sort((a,b)=>b.total - a.total);
+
+  board.innerHTML = "";
+
+  totals.forEach((team, idx)=>{
+    const pct = Math.min(team.total / DAILY_TARGET * 100, 100);
+    const diff = Math.round(team.total - expectedSoFar);
+    const diffClass = diff >= 0 ? "green" : "red";
+
+    // minutes ahead/behind
+    const partsPerMin = 4000/60;
+    const absMins = Math.abs(diff) / partsPerMin;
+    const h = Math.floor(absMins/60);
+    const m = Math.round(absMins % 60);
+    const timeText = h>0 ? `≈ ${h}h ${m}m ${diff>=0?"ahead":"behind"}` : `≈ ${m} min ${diff>=0?"ahead":"behind"}`;
+    const diffText = diff>=0 ? `Ahead by ${Math.abs(diff)} parts` : `Behind by ${Math.abs(diff)} parts`;
+
+    board.innerHTML += `
+      <div class="card">
+        <span class="rank">#${idx+1}</span>
+        <span class="title-badge ${team.name==="ULTRA1"?"blue":team.name==="ULTRA2"?"greenbg":"redbg"}">${team.name}</span>
+
+        <div class="input-row">
+          <input type="number" id="${team.name}" value="${team.total}" ${unlocked?"":"disabled"}>
+          <button onclick="save('${team.name}')" ${unlocked?"":"disabled"}>Update</button>
+        </div>
+
+        <div class="diff ${diffClass}">
+           ${diffText}<br>(${timeText})
+        </div>
+
+        <progress value="${pct}" max="100"></progress>
+
+        <p class="small">${team.total} parts</p>
+
+        <div class="timestamp">Last update: ${formatTimeFromString(team.lastUpdated)}</div>
+      </div>
+    `;
+  });
+}
+
+/* ---------- DB sync ---------- */
+function loadBoard(){
+  db.ref("production").on("value", snap=>{
+    const d = snap.val() || {};
+    renderBoard(d);
+  });
+}
+
+/* ---------- save ---------- */
+function save(name){
+  const el = document.getElementById(name);
+  const val = Number(el?.value) || 0;
+  const nowTime = new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  db.ref("production/"+name).set({
+    total: val,
+    lastUpdated: nowTime
+  });
+}
+
+/* ---------- unlock ---------- */
+unlockBtn.addEventListener("click", ()=>{
+  if(pinInput.value === PIN){
+    unlocked = true;
+    document.querySelector(".lock").style.display = "none";
+    renderBoard(latestData);
+  } else {
+    alert("Incorrect PIN");
+  }
+});
+
+/* ---------- dark mode ---------- */
+darkBtn.addEventListener("click", ()=>{
+  document.body.classList.toggle("dark");
+  localStorage.setItem("darkMode", document.body.classList.contains("dark") ? "1" : "0");
+});
+if(localStorage.getItem("darkMode")==="1") document.body.classList.add("dark");
+
+/* ---------- Christmas toggle (theme) ---------- */
+let CHRISTMAS_MODE = false;
+christmasToggle.addEventListener("click", ()=>{
+  CHRISTMAS_MODE = !CHRISTMAS_MODE;
+  localStorage.setItem("christmasOn", CHRISTMAS_MODE ? "1" : "0");
+  applyChristmasMode();
+});
+function applyChristmasMode(){
+  if(CHRISTMAS_MODE){
+    snowContainer.style.display = "block";
+    snowGround.style.display = "block";
+    startSnow();
+  } else {
+    snowContainer.style.display = "none";
+    snowGround.style.display = "none";
+    stopSnow();
+  }
+}
+
+/* ---------- Snow engine (single, modular) ---------- */
+let snowIntervalA = null;
+let spawnInterval = null;
+function startSnow(){
+  if(spawnInterval) return;
+  spawnInterval = setInterval(()=>{
+    const fl = document.createElement("div");
+    fl.className = "snowflake";
+    fl.textContent = "❄";
+    const size = (Math.random()*10)+8;
+    fl.style.fontSize = size+"px";
+    fl.style.left = Math.random()*100 + "vw";
+    const dur = (Math.random()*6)+6;
+    fl.style.animationDuration = dur + "s";
+    snowContainer.appendChild(fl);
+    setTimeout(()=>fl.remove(), (dur+1)*1000);
+  }, 250);
+
+  if(!snowIntervalA){
+    snowIntervalA = setInterval(updateSnowBuildUp, 60000);
+    updateSnowBuildUp();
+  }
+}
+function stopSnow(){
+  if(spawnInterval){ clearInterval(spawnInterval); spawnInterval=null; }
+  if(snowIntervalA){ clearInterval(snowIntervalA); snowIntervalA=null; }
+  snowContainer.querySelectorAll(".snowflake").forEach(n=>n.remove());
+  snowGround.style.height = "0px";
+}
+
+/* ---------- snow accumulation ---------- */
+const SHIFT_HOURS = 9;
+const MAX_SNOW_VH = 10;
+function updateSnowBuildUp(){
+  const now = new Date();
+  const start = new Date();
+  start.setHours(START_HOUR,0,0,0);
+  let minsElapsed = Math.max(0, (now - start)/60000);
+  let pct = Math.min(minsElapsed / (SHIFT_HOURS*60), 1);
+  snowGround.style.height = (pct * MAX_SNOW_VH) + "vh";
+}
+
+/* ---------- auto reset at 07:00 ---------- */
+function autoResetCheck(){
+  const now = new Date();
+  const hour = now.getHours();
+  const min = now.getMinutes();
+  const today = now.toDateString();
+  const alreadyReset = localStorage.getItem("lastReset");
+  if(hour===7 && min===0 && alreadyReset !== today){
+    TEAMS.forEach(t=>{
+      db.ref("production/"+t).set({ total:0, lastUpdated: new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) });
+    });
+    localStorage.setItem("lastReset", today);
+    console.log("Auto reset done");
+  }
+}
+setInterval(autoResetCheck, 60000);
+autoResetCheck();
+
+/* ---------- start live sync (view-only by default) ---------- */
+loadBoard();
+
+// persist christmas state toggle (remember last choice)
+if(localStorage.getItem("christmasOn")==="1"){ CHRISTMAS_MODE=true; applyChristmasMode(); }
+
+window.save = save;
+</script>
+</body>
+</html>
