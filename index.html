@@ -78,6 +78,8 @@ button {
     padding: 7px 12px;
     border-radius: 6px;
     cursor: pointer;
+    background: #ddd;
+    border: 1px solid #ccc;
 }
 
 body.dark button {
@@ -111,7 +113,32 @@ body.dark button {
 .toggle-container {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
+}
+
+.toggle-btn {
+    padding: 7px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #ddd;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+}
+
+.toggle-btn.active {
+    background: #2979ff;
+    color: #fff;
+}
+
+body.dark .toggle-btn {
+    background: #333;
+    border: 1px solid #555;
+    color: #fff;
+}
+
+body.dark .toggle-btn.active {
+    background: #2979ff;
+    color: #fff;
 }
 </style>
 </head>
@@ -121,11 +148,8 @@ body.dark button {
 <div class="header">
     <h1>ULTRA Production Leaderboard</h1>
     <div class="toggle-container">
-        <button id="darkToggle">🌙 Dark Mode</button>
-        <label>
-            Christmas:
-            <input type="checkbox" id="christmasToggle" checked>
-        </label>
+        <button id="darkToggle" class="toggle-btn">🌙 Dark Mode</button>
+        <button id="christmasToggleBtn" class="toggle-btn active">🎄 Christmas ON</button>
     </div>
 </div>
 
@@ -143,7 +167,7 @@ Target: <b>4,000 parts/hr</b> • Daily target: <b>36,000 parts</b>
 // ===== DOM References =====
 const board = document.getElementById("board");
 const darkToggle = document.getElementById("darkToggle");
-const christmasToggle = document.getElementById("christmasToggle");
+const christmasToggleBtn = document.getElementById("christmasToggleBtn");
 
 let christmasIframe = null;
 
@@ -153,30 +177,41 @@ darkToggle.addEventListener("click", () => {
 });
 
 // ===== Christmas Effects =====
-function updateChristmas() {
-    if (christmasToggle.checked) {
+function updateChristmas(state) {
+    if (state) {
         if (!christmasIframe) {
             christmasIframe = document.createElement("iframe");
             christmasIframe.src = "christmas-effects.html";
             christmasIframe.style.border = "none";
             christmasIframe.style.position = "fixed";
-            christmasIframe.style.inset = "0";
+            christmasIframe.style.top = "0";
+            christmasIframe.style.left = "0";
+            christmasIframe.style.width = "100vw";
+            christmasIframe.style.height = "100vh";
             christmasIframe.style.pointerEvents = "none";
             christmasIframe.style.zIndex = "999";
             document.body.appendChild(christmasIframe);
         }
+        christmasToggleBtn.classList.add("active");
+        christmasToggleBtn.textContent = "🎄 Christmas ON";
     } else {
         if (christmasIframe) {
             christmasIframe.remove();
             christmasIframe = null;
         }
+        christmasToggleBtn.classList.remove("active");
+        christmasToggleBtn.textContent = "🎄 Christmas OFF";
     }
 }
 
 // Initial load (Christmas ON by default)
-updateChristmas();
+updateChristmas(true);
 
-christmasToggle.addEventListener("change", updateChristmas);
+// Toggle button click
+christmasToggleBtn.addEventListener("click", () => {
+    const isActive = christmasIframe !== null;
+    updateChristmas(!isActive);
+});
 
 // ===== Firebase Initialization =====
 let db = null;
