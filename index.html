@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ULTRA Production Leaderboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin:0;
+    background:#f1f3f5;
+}
+header {
+    padding:16px;
+    text-align:center;
+}
+h1 {margin:4px;}
+.pin-box {
+    background:#eee;
+    padding:10px;
+    text-align:center;
+}
+.pin-box input {
+    width:120px;
+    font-size:18px;
+    text-align:center;
+}
+.container {
+    max-width:800px;
+    margin:0 auto;
+}
+.team {
+    background:#fff;
+    margin:12px;
+    padding:12px;
+    border-radius:10px;
+    box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+.team h2 {margin:0 0 6px;}
+input.parts {
+    width:140px;
+    font-size:18px;
+}
+button {
+    padding:6px 12px;
+    font-size:15px;
+}
+.progress-bar {
+    height:14px;
+    background:#ddd;
+    border-radius:7px;
+    overflow:hidden;
+    margin-top:8px;
+}
+.progress {
+    height:100%;
+    width:0%;
+    background:gray;
+}
+.status {
+    margin-top:6px;
+}
+.ahead { color:green; }
+.behind { color:red; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>ULTRA Production Leaderboard</h1>
+    <div>Target: 4,000 parts/hour • Daily target: 36,000</div>
+</header>
+
+<div class="pin-box">
+    🔐 Enter PIN to enable editing:
+    <input id="pinInput" type="number" maxlength="4">
+    <span id="pinStatus">Locked</span>
+</div>
+
+<div class="container">
+    <div class="team" data-team="ULTRA1">
+        <h2>ULTRA1</h2>
+        <input class="parts" type="number" placeholder="Total parts" disabled>
+        <button disabled>Update</button>
+        <div class="progress-bar"><div class="progress"></div></div>
+        <div class="status"></div>
+    </div>
+
+    <div class="team" data-team="ULTRA2">
+        <h2>ULTRA2</h2>
+        <input class="parts" type="number" placeholder="Total parts" disabled>
+        <button disabled>Update</button>
+        <div class="progress-bar"><div class="progress"></div></div>
+        <div class="status"></div>
+    </div>
+
+    <div class="team" data-team="ULTRA3">
+        <h2>ULTRA3</h2>
+        <input class="parts" type="number" placeholder="Total parts" disabled>
+        <button disabled>Update</button>
+        <div class="progress-bar"><div class="progress"></div></div>
+        <div class="status"></div>
+    </div>
+</div>
+
+<script>
+const PIN = "0711";
+const START_HOUR = 9;
+const RATE = 4000;
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDemo",
+  authDomain: "demo.firebaseapp.com",
+  databaseURL: "https://demo.firebaseio.com",
+  projectId: "demo",
+  storageBucket: "demo.appspot.com",
+  messagingSenderId: "000000",
+  appId: "0:0:web:0"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const pinInput = document.getElementById("pinInput");
+const pinStatus = document.getElementById("pinStatus");
+
+pinInput.addEventListener("input", ()=>{
+    if(pinInput.value === PIN){
+        document.querySelectorAll("input.parts,button").forEach(el=>el.disabled=false);
+        pinStatus.innerText="Unlocked ✅";
+        pinStatus.style.color="green";
+    }
+});
+
+function elapsedHours(){
+    const now = new Date();
+    const start = new Date();
+    start.setHours(START_HOUR,0,0,0);
+    return Math.max(0,(now-start)/36e5);
+}
+
+function updateUI(team, parts){
+    const root=document.querySelector(`[data-team="${team}"]`);
+    const prog=root.querySelector(".progress");
+    const status=root.querySelector(".status");
+
+    const hrs=elapsedHours();
+    const expected=hrs*RATE;
+    const diff=Math.round(parts-expected);
+
+    let percent=Math.min(100,(parts/36000)*100);
+    prog.style.width=percent+"%";
+
+    if(diff>=0){
+        status.className="status ahead";
+        status.innerText=`Ahead by ${diff} parts`;
+        prog.style.background="green";
+    } else {
+        status.className="status behind";
+        status.innerText=`Behind by ${Math.abs(diff)} parts`;
+        prog.style.background="red";
+    }
+}
+
+["ULTRA1","ULTRA2","ULTRA3"].forEach(team=>{
+    db.ref("teams/"+team).on("value",snap=>{
+        if(!snap.exists()) return;
+        updateUI(team, snap.val());
+    });
+
+    const box=document.querySelector(`[data-team="${team}"]`);
+    const input=box.querySelector(".parts");
+    const btn=box.querySelector("button");
+
+    btn.addEventListener("click",()=>{
+        const val=parseInt(input.value||0);
+        db.ref("teams/"+team).set(val);
+        input.value="";
+    });
+});
+
+setInterval(()=>{
+    ["ULTRA1","ULTRA2","ULTRA3"].forEach(team=>{
+        db.ref("teams/"+team).get().then(s=>{
+            if(s.exists()) updateUI(team,s.val());
+        });
+    });
+},180000);
+</script>
+
+</body>
+</html>
