@@ -3,192 +3,547 @@
 <head>
 <meta charset="UTF-8">
 <title>ULTRA Production Leaderboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f8;
+    margin:0;
+    padding:15px;
+}
+
+h1{text-align:center;}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.card{
+    background:#fff;
+    border-radius:12px;
+    padding:15px;
+    margin:12px 0;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* ===== BOARD ===== */
+
+.rank{
+    background:#ddd;
+    border-radius:6px;
+    display:inline-block;
+    padding:4px 8px;
+    font-weight:bold;
+}
+
+.blue{background:#2979ff;color:#fff;}
+.greenbg{background:#43a047;color:#fff;}
+.redbg{background:#FDDA0D;color:#fff;}
+
+progress{
+    width:100%;
+    height:18px;
+}
+
+/* ===== DARK MODE ===== */
+
+body.dark{
+    background:#121212;
+    color:#eee;
+}
+.dark .card{background:#1e1e1e;}
+.dark input,.dark button{
+    background:#333;
+    color:#fff;
+    border-color:#555;
+}
+
+/* ===== INPUTS ===== */
+
+input{
+    width:80px;
+    padding:6px;
+}
+button{
+    padding:7px 12px;
+    border-radius:6px;
+}
+
+.lock{text-align:center;margin-bottom:20px;}
+.input-row{display:flex;gap:10px;align-items:center;}
+
+.green{color:#00cc5a;font-weight:bold;}
+.red{color:#ff4a4a;font-weight:bold;}
+
+.timestamp{
+    font-size:11px;
+    color:#777;
+    position:absolute;
+    right:10px;
+    top:8px;
+}
+
+/* ===== BAUBLES ===== */
+
+.swing-wrapper{
+    position:absolute;
+    top:0;
+    transform-origin: top center;
+    animation:swing ease-in-out infinite alternate;
+}
+
+@keyframes swing{
+    from{transform:rotate(-6deg);}
+    to{transform:rotate(6deg);}
+}
+
+.string{
+    width:2px;
+    background:#FFC000;
+    margin:0 auto;
+    box-shadow: 0 0 6px rgba(255,192,0,0.85);
+}
+
+.bauble{
+    border-radius:50%;
+    margin:0 auto;
+    background:
+      radial-gradient(circle at 35% 30%, #fff 5%, var(--c1) 35%, var(--c2) 80%);
+    box-shadow:
+        inset -2px -4px 8px rgba(0,0,0,.35),
+        0 0 7px rgba(255,255,255,.35);
+}
+/* ===== 3D SNOW DRIFT ===== */
+
+#snow-ground{
+    pointer-events:none;
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100vw;
+    height:2px;
+    overflow:hidden;
+    z-index:2;
+    transition:height 1.5s ease-out;
+}
+
+/* Base drift layers */
+.snow-layer{
+    position:absolute;
+    width:200%;
+    height:100%;
+    border-radius:50%;
+    filter: blur(2px);
+}
+
+/* Highlight layer */
+.layer1{
+    bottom:5px;
+    background:linear-gradient(90deg,#fff,#f9f9f9,#fff);
+    opacity:0.95;
+    animation: wave 25s linear infinite;
+}
+
+/* Mid shadow */
+.layer2{
+    bottom:0px;
+    background:linear-gradient(90deg,#eee,#ddd,#eee);
+    opacity:0.8;
+    animation: wave 35s linear infinite reverse;
+}
+
+/* Deep shade */
+.layer3{
+    bottom:-6px;
+    background:linear-gradient(90deg,#ddd,#cfcfcf,#ddd);
+    opacity:0.6;
+    animation: wave 45s linear infinite;
+}
+
+/* Wave motion */
+@keyframes wave{
+    from { transform:translateX(0); }
+    to { transform:translateX(-50%); }
+}
+    
+/* ===== SNOW ===== */
+
+#snow{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:999;
+}
+
+.snowflake{
+    position:absolute;
+    top:-10px;
+    background:white;
+    border-radius:50%;
+    filter: blur(.4px);
+    opacity:.9;
+    animation:fall linear infinite, drift ease-in-out infinite;
+}
+
+@keyframes fall{
+    to{transform:translateY(110vh);}
+}
+
+@keyframes drift{
+    0%,100%{margin-left:0;}
+    50%{margin-left:25px;}
+}
+    /* Falling snow */
+#snow-container{
+    pointer-events:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    z-index:0;
+}
+
+/* Ground accumulation */
+#snow-ground{
+    pointer-events:none;
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100vw;
+    height:2px;
+    background:linear-gradient(#fff,#e5e5e5);
+    transition:height 1.5s linear;
+    z-index:1;
+}
+
+/* Individual snowflakes */
+flake{
+    position:absolute;
+    color:white;
+    user-select:none;
+    pointer-events:none;
+    animation: fall linear forwards;
+}
+
+@keyframes fall{
+    from{
+        transform: translateY(-10px);
+        opacity:1;
+    }
+    to{
+        transform: translateY(100vh);
+        opacity:0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="snow"></div>
+
+<div class="header">
+    <h1>ULTRA Production Leaderboard</h1>
+    <button onclick="toggleDark()">🌙 Dark Mode</button>
+</div>
+
+<div class="lock">
+<h3>Enter PIN to unlock editing</h3>
+<input type="password" id="pinInput" maxlength="4">
+<button onclick="unlock()">Unlock</button>
+</div>
+
+<div id="board"></div>
+
+<div class="footer" style="text-align:center;color:#777;">
+Target: <b>4,000 parts/hr</b> • Daily target: <b>36,000 parts</b>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-<style>
-body {
-    font-family: Arial, sans-serif;
-    margin:0;
-    background:#f1f3f5;
-}
-header {
-    padding:16px;
-    text-align:center;
-}
-h1 {margin:4px;}
-.pin-box {
-    background:#eee;
-    padding:10px;
-    text-align:center;
-}
-.pin-box input {
-    width:120px;
-    font-size:18px;
-    text-align:center;
-}
-.container {
-    max-width:800px;
-    margin:0 auto;
-}
-.team {
-    background:#fff;
-    margin:12px;
-    padding:12px;
-    border-radius:10px;
-    box-shadow:0 2px 5px rgba(0,0,0,.1);
-}
-.team h2 {margin:0 0 6px;}
-input.parts {
-    width:140px;
-    font-size:18px;
-}
-button {
-    padding:6px 12px;
-    font-size:15px;
-}
-.progress-bar {
-    height:14px;
-    background:#ddd;
-    border-radius:7px;
-    overflow:hidden;
-    margin-top:8px;
-}
-.progress {
-    height:100%;
-    width:0%;
-    background:gray;
-}
-.status {
-    margin-top:6px;
-}
-.ahead { color:green; }
-.behind { color:red; }
-</style>
-</head>
-<body>
-
-<header>
-    <h1>ULTRA Production Leaderboard</h1>
-    <div>Target: 4,000 parts/hour • Daily target: 36,000</div>
-</header>
-
-<div class="pin-box">
-    🔐 Enter PIN to enable editing:
-    <input id="pinInput" type="number" maxlength="4">
-    <span id="pinStatus">Locked</span>
-</div>
-
-<div class="container">
-    <div class="team" data-team="ULTRA1">
-        <h2>ULTRA1</h2>
-        <input class="parts" type="number" placeholder="Total parts" disabled>
-        <button disabled>Update</button>
-        <div class="progress-bar"><div class="progress"></div></div>
-        <div class="status"></div>
-    </div>
-
-    <div class="team" data-team="ULTRA2">
-        <h2>ULTRA2</h2>
-        <input class="parts" type="number" placeholder="Total parts" disabled>
-        <button disabled>Update</button>
-        <div class="progress-bar"><div class="progress"></div></div>
-        <div class="status"></div>
-    </div>
-
-    <div class="team" data-team="ULTRA3">
-        <h2>ULTRA3</h2>
-        <input class="parts" type="number" placeholder="Total parts" disabled>
-        <button disabled>Update</button>
-        <div class="progress-bar"><div class="progress"></div></div>
-        <div class="status"></div>
-    </div>
-</div>
-
 <script>
-const PIN = "0711";
-const START_HOUR = 9;
-const RATE = 4000;
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDemo",
-  authDomain: "demo.firebaseapp.com",
-  databaseURL: "https://demo.firebaseio.com",
-  projectId: "demo",
-  storageBucket: "demo.appspot.com",
-  messagingSenderId: "000000",
-  appId: "0:0:web:0"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-const pinInput = document.getElementById("pinInput");
-const pinStatus = document.getElementById("pinStatus");
-
-pinInput.addEventListener("input", ()=>{
-    if(pinInput.value === PIN){
-        document.querySelectorAll("input.parts,button").forEach(el=>el.disabled=false);
-        pinStatus.innerText="Unlocked ✅";
-        pinStatus.style.color="green";
-    }
+firebase.initializeApp({
+ apiKey: "AIzaSyBjEcJRy9C_WXJYhqLaBEZJ54ZwpEgH8qE",
+ authDomain: "ultra-production-board.firebaseapp.com",
+ projectId: "ultra-production-board",
+ storageBucket: "ultra-production-board.firebasestorage.app",
+ messagingSenderId: "1058393515822",
+ appId: "1:1058393515822:web:a706cdbc8c02cc0c0e3cbf"
 });
 
-function elapsedHours(){
+const db=firebase.database();
+
+const PIN="0711";
+const DAILY_TARGET=36000;
+let unlocked=false;
+
+const teams=["ULTRA1","ULTRA2","ULTRA3"];
+
+function toggleDark(){
+    document.body.classList.toggle("dark");
+}
+
+function unlock(){
+    if(pinInput.value===PIN){
+        unlocked=true;
+        document.querySelector(".lock").style.display="none";
+        loadBoard();
+    } else alert("Wrong PIN");
+}
+
+function loadBoard(){
+    db.ref("production").on("value",s=>{
+        renderBoard(s.val()||{});
+    });
+}
+function save(name){
+    db.ref("production/"+name).set({
+        total:+document.getElementById(name).value,
+        lastUpdated:new Date().toLocaleTimeString([],{
+            hour:"2-digit",
+            minute:"2-digit"
+        })
+    });
+}
+function renderBoard(data){
+
     const now = new Date();
-    const start = new Date();
-    start.setHours(START_HOUR,0,0,0);
-    return Math.max(0,(now-start)/36e5);
-}
 
-function updateUI(team, parts){
-    const root=document.querySelector(`[data-team="${team}"]`);
-    const prog=root.querySelector(".progress");
-    const status=root.querySelector(".status");
+    // ===== SHIFT TIMING =====
+    const START_HOUR = 9;               
+    const TARGET_PER_HOUR = 4000;
+    const TARGET_PER_MIN = TARGET_PER_HOUR / 60;
 
-    const hrs=elapsedHours();
-    const expected=hrs*RATE;
-    const diff=Math.round(parts-expected);
+    const shiftStart = new Date();
+    shiftStart.setHours(START_HOUR,0,0,0);
 
-    let percent=Math.min(100,(parts/36000)*100);
-    prog.style.width=percent+"%";
+    let minsElapsed = Math.max(0,(now - shiftStart) / 60000);
 
-    if(diff>=0){
-        status.className="status ahead";
-        status.innerText=`Ahead by ${diff} parts`;
-        prog.style.background="green";
-    } else {
-        status.className="status behind";
-        status.innerText=`Behind by ${Math.abs(diff)} parts`;
-        prog.style.background="red";
-    }
-}
+    const expectedSoFar = minsElapsed * TARGET_PER_MIN;
 
-["ULTRA1","ULTRA2","ULTRA3"].forEach(team=>{
-    db.ref("teams/"+team).on("value",snap=>{
-        if(!snap.exists()) return;
-        updateUI(team, snap.val());
+    // ===== TOTALS =====
+    const totals = teams.map(t=>({
+        name: t,
+        total: data[t]?.total || 0,
+        lastUpdated: data[t]?.lastUpdated || "--"
+    }))
+    .sort((a,b)=> b.total - a.total);
+
+    board.innerHTML = "";
+
+    // ========= BUILD HTML FIRST =========
+    totals.forEach((team,i)=>{
+
+        const pct = Math.min(team.total / DAILY_TARGET * 100, 100);
+
+        // ===== AHEAD / BEHIND CALC =====
+        const diff = team.total - expectedSoFar;
+        const diffClass = diff >= 0 ? "green" : "red";
+
+        const absMins = Math.abs(diff) / TARGET_PER_MIN;
+        const h = Math.floor(absMins / 60);
+        const m = Math.round(absMins % 60);
+
+        const timeText = h > 0
+            ? `≈ ${h}h ${m}m ${diff >= 0 ? "ahead" : "behind"}`
+            : `≈ ${m} min ${diff >= 0 ? "ahead" : "behind"}`;
+
+        const diffText = diff >= 0
+            ? `Ahead by ${Math.round(diff)} parts`
+            : `Behind by ${Math.round(Math.abs(diff))} parts`;
+
+        board.innerHTML += `
+<div class="card" style="position:relative">
+    <span class="rank">#${i+1}</span>
+
+    <span class="${
+            team.name=="ULTRA1" ? "blue" :
+            team.name=="ULTRA2" ? "greenbg" :
+            "redbg"
+        }">${team.name}</span>
+
+    <div class="input-row">
+        <input id="${team.name}"
+               type="number"
+               value="${team.total}"
+               ${unlocked?"":"disabled"}>
+
+        <button onclick="save('${team.name}')"
+                ${unlocked?"":"disabled"}>
+            Update
+        </button>
+    </div>
+
+    <div class="diff ${diffClass}">
+        ${diffText}<br>
+        (${timeText})
+    </div>
+
+<div class="progress-row">
+
+    <progress value="${pct}" max="100"></progress>
+
+    <div>
+        <div class="gauge">
+            <div class="needle" id="needle-${team.name}"></div>
+        </div>
+        <p class="speed-text" id="speed-${team.name}">-- pph</p>
+    </div>
+
+</div>
+    <p>${team.total} parts</p>
+
+    <p class="timestamp">
+        Last update: ${team.lastUpdated}
+    </p>
+</div>`;
     });
 
-    const box=document.querySelector(`[data-team="${team}"]`);
-    const input=box.querySelector(".parts");
-    const btn=box.querySelector("button");
+/* ===== BAUBLES ===== */
 
-    btn.addEventListener("click",()=>{
-        const val=parseInt(input.value||0);
-        db.ref("teams/"+team).set(val);
-        input.value="";
-    });
-});
+const colors=[["#ff3366","#a1002b"],["#ffd24a","#a77300"],
+              ["#44ffaa","#007c43"],["#7b6bff","#281d88"]];
+
+for(let i=0;i<9;i++){
+    const wrap=document.createElement("div");
+    wrap.className="swing-wrapper";
+
+    wrap.style.left=(5+i*(90/9))+"%";
+    wrap.style.animationDuration=(3+Math.random()*2)+"s";
+
+    const d=40+Math.random()*60;
+
+    const s=document.createElement("div");
+    s.className="string";
+    s.style.height=d+"px";
+
+    const b=document.createElement("div");
+    b.className="bauble";
+
+    const size=20+Math.random()*15;
+    b.style.width=b.style.height=size+"px";
+
+    const c=colors[Math.floor(Math.random()*colors.length)];
+    b.style.setProperty("--c1",c[0]);
+    b.style.setProperty("--c2",c[1]);
+
+    wrap.appendChild(s);
+    wrap.appendChild(b);
+    document.body.appendChild(wrap);
+}
+
+/* ===== SNOW ===== */
+
+const snow=document.getElementById("snow");
 
 setInterval(()=>{
-    ["ULTRA1","ULTRA2","ULTRA3"].forEach(team=>{
-        db.ref("teams/"+team).get().then(s=>{
-            if(s.exists()) updateUI(team,s.val());
+    const flake=document.createElement("div");
+    flake.className="snowflake";
+
+    const size=Math.random()*5+2;
+    flake.style.width=flake.style.height=size+"px";
+    flake.style.left=Math.random()*100+"vw";
+
+    const speed=Math.random()*6+5;
+    flake.style.animationDuration=speed+"s,3s";
+
+    snow.appendChild(flake);
+
+    setTimeout(()=>flake.remove(),(speed+1)*1000);
+},90);
+
+const SHIFT_START = 9;               // 9am
+const SHIFT_HOURS = 9;              // 9 hour shift
+const MAX_SNOW_HEIGHT = 10;         // 10vh
+
+function spawnSnowflake(){
+    const flake=document.createElement("flake");
+
+    flake.textContent="❄";
+    flake.style.left=Math.random()*100+"vw";
+    flake.style.fontSize=(Math.random()*10+10)+"px";
+    flake.style.animationDuration=(Math.random()*5+6)+"s";
+
+    document.getElementById("snow-container").appendChild(flake);
+
+    setTimeout(()=>flake.remove(),10000);
+}
+
+setInterval(spawnSnowflake,350);
+
+/* ---------- ACCUMULATION ---------- */
+
+function updateSnowBuildUp(){
+
+    const now=new Date();
+
+    const start=new Date();
+    start.setHours(SHIFT_START,0,0,0);
+
+    let minsElapsed = Math.max(0,(now - start)/60000);
+    let pct = Math.min(minsElapsed / (SHIFT_HOURS*60),1);
+
+    let heightVH = pct * MAX_SNOW_HEIGHT;
+
+    document.getElementById("snow-ground").style.height = heightVH+"vh";
+}
+
+setInterval(updateSnowBuildUp,60000);
+updateSnowBuildUp();
+
+// ===============================
+// AUTO RESET BOARD AT 7AM DAILY
+// ===============================
+
+function autoResetCheck() {
+
+    const now = new Date();
+
+    const hour = now.getHours();
+    const min = now.getMinutes();
+
+    // Get today's date string
+    const today = now.toDateString();
+
+    // Prevent multiple resets in same day
+    const alreadyReset = localStorage.getItem("lastReset");
+
+    // Reset at exactly 7:00 AM
+    if(hour === 7 && min === 0 && alreadyReset !== today) {
+
+        teams.forEach(team => {
+            db.ref("production/" + team).set({
+                total: 0,
+                lastUpdated: new Date().toLocaleTimeString()
+            });
         });
-    });
-},180000);
+
+        localStorage.setItem("lastReset", today);
+
+        console.log("✅ Daily reset complete");
+    }
+}
+
+// Check every minute
+setInterval(autoResetCheck, 60000);
+
+// Run once on page load
+autoResetCheck();
+
 </script>
 
+<div id="snow-container"></div>
+<div id="snow-ground">
+    <div class="snow-layer layer1"></div>
+    <div class="snow-layer layer2"></div>
+    <div class="snow-layer layer3"></div>
+</div>
+    
 </body>
 </html>
