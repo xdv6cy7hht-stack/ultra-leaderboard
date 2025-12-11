@@ -140,6 +140,31 @@ body.dark .toggle-btn.active {
     background: #2979ff;
     color: #fff;
 }
+    .team-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.team-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.team-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.diff-line {
+    text-align: center;
+    margin-top: 6px;
+    font-weight: bold;
+}
 </style>
 </head>
 
@@ -278,32 +303,36 @@ function renderBoard(data){
             ? `Ahead by ${Math.round(diff)} parts`
             : `Behind by ${Math.round(Math.abs(diff))} parts`;
 
-        board.innerHTML += `
+    board.innerHTML += `
 <div class="card" style="position:relative">
-    <span class="rank">#${i+1}</span>
 
-    <span class="${
-            team.name=="ULTRA1" ? "blue" :
-            team.name=="ULTRA2" ? "greenbg" :
-            "redbg"
-        }">${team.name}</span>
+    <div class="team-header">
 
-    <div class="input-row">
-        <input id="${team.name}" type="number" value="${team.total}">
-        <button onclick="save('${team.name}')">Update</button>
-    </div>
+        <div class="team-left">
+            <span class="rank">#${i+1}</span>
 
-    <div class="diff ${diffClass}">
-        ${diffText}<br>(${timeText})
+            <span class="${
+                team.name=="ULTRA1" ? "blue" :
+                team.name=="ULTRA2" ? "greenbg" :
+                "redbg"
+            }">${team.name}</span>
+        </div>
+
+        <div class="team-inputs">
+            <input id="${team.name}" type="number" value="${team.total}">
+            <button onclick="save('${team.name}')">Update</button>
+        </div>
+
+        <p class="timestamp">Last update: ${team.lastUpdated}</p>
+
     </div>
 
     <progress value="${pct}" max="100"></progress>
-    
-    <p>${team.total} parts</p>
 
-    <p class="timestamp">
-        Last update: ${team.lastUpdated}
-    </p>
+    <div class="diff-line ${diffClass}">
+        ${diffText}
+    </div>
+
 </div>`;
     });
 }
