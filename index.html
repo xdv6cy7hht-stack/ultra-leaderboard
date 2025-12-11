@@ -100,9 +100,9 @@ body.dark button {
 .timestamp {
     font-size: 11px;
     color: #777;
-    position: absolute;
-    right: 10px;
-    top: 8px;
+    text-align: right;
+    display: block;
+    margin-top: 6px;
 }
 
 .footer {
@@ -330,7 +330,8 @@ function renderBoard(data){
     <progress value="${pct}" max="100"></progress>
 
     <div class="diff-line ${diffClass}">
-        ${diffText}
+        ${diffText} • ${timeText}
+
     </div>
 
 </div>`;
