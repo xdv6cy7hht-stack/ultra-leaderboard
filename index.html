@@ -150,6 +150,7 @@ body.dark .toggle-btn.active {
     <div class="toggle-container">
         <button id="darkToggle" class="toggle-btn">🌙 Dark Mode</button>
         <button id="christmasToggleBtn" class="toggle-btn active">🎄 Christmas ON</button>
+        <button id="resetBtn" class="toggle-btn">🔁 Reset Now</button>
     </div>
 </div>
 
@@ -314,52 +315,58 @@ function loadBoard(){
         renderBoard(s.val() || {});
     });
 }
-// --- DAILY RESET AT 7AM --- //
+// ======= Manual Reset Button (replaces auto 7am reset logic) =======
 
-function checkDailyReset() {
-    const now = new Date();
-    const todayStr = now.toISOString().split("T")[0];  // yyyy-mm-dd
+const resetBtn = document.getElementById("resetBtn");
 
-    // Load last reset date
-    const lastReset = localStorage.getItem("lastResetDate");
+// Helper: zero object to push to DB
+function zeroOutTeam(team) {
+    if (!db) return Promise.resolve();
+    return db.ref("production/" + team).set({
+        total: 0,
+        lastUpdated: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    });
+}
 
-    // Has the site already reset today?
-    if (lastReset === todayStr) {
-        return; // already done, stop here
-    }
+async function performManualReset() {
+    // confirmation to prevent mistakes
+    const ok = confirm("Are you sure you want to reset all teams to 0? This action cannot be undone.");
+    if (!ok) return;
 
-    // Create today's 7:00 AM timestamp
-    const resetTime = new Date();
-    resetTime.setHours(7, 0, 0, 0);
+    try {
+        // Optionally clear UI-stored local data (adjust keys to match your app)
+        // localStorage.removeItem("ULTRA1_data");
+        // localStorage.removeItem("ULTRA2_data");
+        // localStorage.removeItem("ULTRA3_data");
 
-    // If current time is AFTER 7:00 AM → perform reset
-    if (now.getTime() >= resetTime.getTime()) {
-        performDailyReset();
-        localStorage.setItem("lastResetDate", todayStr);
+        // Reset Firebase data for each team (if DB available)
+        if (db) {
+            const promises = teams.map(t => zeroOutTeam(t));
+            await Promise.all(promises);
+        } else {
+            console.warn("Firebase db not available — local UI will still reflect reset values.");
+        }
+
+        // Update the visible board immediately to show zeros while DB updates propagate
+        const fakeZeroData = {};
+        teams.forEach(t => fakeZeroData[t] = { total: 0, lastUpdated: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) });
+        renderBoard(fakeZeroData);
+
+        // Optional: store last reset stamp in localStorage
+        localStorage.setItem("manualResetAt", new Date().toISOString());
+
+        alert("Reset complete — all teams set to 0.");
+        console.log("Manual reset completed at", new Date().toISOString());
+    } catch (err) {
+        console.error("Manual reset failed:", err);
+        alert("Reset failed — check console for details.");
     }
 }
 
-// --- WHAT GETS RESET --- //
-function performDailyReset() {
-    // CLEAR ONLY THE DATA THE LEADERBOARD USES
-    localStorage.removeItem("ULTRA1_data");
-    localStorage.removeItem("ULTRA2_data");
-    localStorage.removeItem("ULTRA3_data");
-
-    // If you store anything else, remove here too:
-    // localStorage.removeItem("someOtherField");
-
-    console.log("Daily reset completed at 7AM");
+// Wire up button
+if (resetBtn) {
+    resetBtn.addEventListener("click", performManualReset);
 }
-
-// RUN CHECK ON PAGE LOAD
-checkDailyReset();
-
-// ===== Initialize =====
-loadBoard();
-autoResetCheck();
-setInterval(autoResetCheck, 60000);
-
 </script>
 
 </body>
