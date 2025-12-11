@@ -271,40 +271,29 @@ function save(name){
         lastUpdated: new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })
     });
 }
-
-function renderBoard(data){
+function renderBoard(data) {
     const now = new Date();
     const shiftStart = new Date();
-    shiftStart.setHours(START_HOUR,0,0,0);
-    let minsElapsed = Math.max(0,(now - shiftStart)/60000);
+    shiftStart.setHours(START_HOUR, 0, 0, 0);
+    let minsElapsed = Math.max(0, (now - shiftStart) / 60000);
     const expectedSoFar = minsElapsed * TARGET_PER_MIN;
 
-    const totals = teams.map(t=>({
+    const totals = teams.map(t => ({
         name: t,
         total: data?.[t]?.total || 0,
         lastUpdated: data?.[t]?.lastUpdated || "--"
-    })).sort((a,b)=> b.total - a.total);
+    })).sort((a, b) => b.total - a.total);
 
     board.innerHTML = "";
 
-    totals.forEach((team,i)=>{
+    totals.forEach((team, i) => {
         const pct = Math.min(team.total / DAILY_TARGET * 100, 100);
         const diff = team.total - expectedSoFar;
-        const absMins = Math.abs(diff) / TARGET_PER_MIN;
 
-let diffClass;
-if (diff < 0) { // Behind
-    if (absMins <= 30) diffClass = "orange"; // slightly behind
-    else diffClass = "red"; // way behind
-} else { // Ahead
-    if (absMins <= 20) diffClass = "orange"; // slightly ahead
-    else diffClass = "green"; // way ahead
-}
-
+        // --- Minutes ahead/behind ---
         const absMins = Math.abs(diff) / TARGET_PER_MIN;
         const h = Math.floor(absMins / 60);
         const m = Math.round(absMins % 60);
-
         const timeText = h > 0
             ? `≈ ${h}h ${m}m ${diff >= 0 ? "ahead" : "behind"}`
             : `≈ ${m} min ${diff >= 0 ? "ahead" : "behind"}`;
@@ -313,17 +302,27 @@ if (diff < 0) { // Behind
             ? `Ahead by ${Math.round(diff)} parts`
             : `Behind by ${Math.round(Math.abs(diff))} parts`;
 
-    board.innerHTML += `
+        // --- Diff color logic with orange ---
+        let diffClass;
+        if (diff < 0) { // Behind
+            if (absMins <= 30) diffClass = "orange";
+            else diffClass = "red";
+        } else { // Ahead
+            if (absMins <= 20) diffClass = "orange";
+            else diffClass = "green";
+        }
+
+        board.innerHTML += `
 <div class="card" style="position:relative">
 
     <div class="team-header">
 
         <div class="team-left">
-            <span class="rank">#${i+1}</span>
+            <span class="rank">#${i + 1}</span>
 
             <span class="${
-                team.name=="ULTRA1" ? "blue" :
-                team.name=="ULTRA2" ? "greenbg" :
+                team.name == "ULTRA1" ? "blue" :
+                team.name == "ULTRA2" ? "greenbg" :
                 "redbg"
             }">${team.name}</span>
         </div>
@@ -340,7 +339,7 @@ if (diff < 0) { // Behind
     <progress value="${pct}" max="100"></progress>
 
     <div class="diff-line ${diffClass}">
-        ${diffText} • ${timeText} • ${Math.round(pct)}%
+        ${diffText} • ${timeText} • ${Math.round(pct)}% completed
     </div>
 
 </div>`;
