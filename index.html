@@ -272,11 +272,23 @@ function save(name){
     });
 }
 function renderBoard(data) {
+
     const now = new Date();
-    const shiftStart = new Date();
-    shiftStart.setHours(START_HOUR, 0, 0, 0);
-    let minsElapsed = Math.max(0, (now - shiftStart) / 60000);
-    const expectedSoFar = minsElapsed * TARGET_PER_MIN;
+
+    // ========== Correct expected parts logic ==========
+    const START_HOUR = 9;             // Shift starts 09:00
+    const DAILY_TARGET = 36000;       // 36k per day
+    const TARGET_PER_HOUR = 4000;     // 4k/hr
+    const TARGET_PER_MIN = TARGET_PER_HOUR / 60;
+
+    // Hours since 9am
+    let hoursPassed = (now.getHours() + now.getMinutes() / 60) - START_HOUR;
+
+    if (hoursPassed < 0) hoursPassed = 0;  // Before 9am → treat as 0
+    if (hoursPassed > 9) hoursPassed = 9;  // After 6pm → cap at full shift
+
+    const expectedSoFar = Math.min(hoursPassed * TARGET_PER_HOUR, DAILY_TARGET);
+    // ==================================================
 
     const totals = teams.map(t => ({
         name: t,
@@ -287,13 +299,16 @@ function renderBoard(data) {
     board.innerHTML = "";
 
     totals.forEach((team, i) => {
+
         const pct = (team.total / DAILY_TARGET) * 100;
+
         const diff = team.total - expectedSoFar;
 
-        // --- Minutes ahead/behind ---
+        // Convert parts to minutes
         const absMins = Math.abs(diff) / TARGET_PER_MIN;
         const h = Math.floor(absMins / 60);
         const m = Math.round(absMins % 60);
+
         const timeText = h > 0
             ? `≈ ${h}h ${m}m ${diff >= 0 ? "ahead" : "behind"}`
             : `≈ ${m} min ${diff >= 0 ? "ahead" : "behind"}`;
@@ -302,18 +317,18 @@ function renderBoard(data) {
             ? `Ahead by ${Math.round(diff)} parts`
             : `Behind by ${Math.round(Math.abs(diff))} parts`;
 
-        // --- Diff color logic with orange ---
+        // ===== Orange zone =====
         let diffClass;
-        if (diff < 0) { // Behind
+        if (diff < 0) {
             if (absMins <= 30) diffClass = "orange";
             else diffClass = "red";
-        } else { // Ahead
+        } else {
             if (absMins <= 20) diffClass = "orange";
             else diffClass = "green";
         }
 
         board.innerHTML += `
-<div class="card" style="position:relative">
+<div class="card">
 
     <div class="team-header">
 
@@ -321,8 +336,8 @@ function renderBoard(data) {
             <span class="rank">#${i + 1}</span>
 
             <span class="${
-                team.name == "ULTRA1" ? "blue" :
-                team.name == "ULTRA2" ? "greenbg" :
+                team.name === "ULTRA1" ? "blue" :
+                team.name === "ULTRA2" ? "greenbg" :
                 "redbg"
             }">${team.name}</span>
         </div>
