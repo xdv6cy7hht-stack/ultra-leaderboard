@@ -314,27 +314,46 @@ function loadBoard(){
         renderBoard(s.val() || {});
     });
 }
+// --- DAILY RESET AT 7AM --- //
 
-// ===== Auto Reset Board at 7AM =====
-function autoResetCheck() {
-    if (!db) return;
+function checkDailyReset() {
     const now = new Date();
-    const hour = now.getHours();
-    const min = now.getMinutes();
-    const today = now.toDateString();
-    const alreadyReset = localStorage.getItem("lastReset");
+    const todayStr = now.toISOString().split("T")[0];  // yyyy-mm-dd
 
-    if(hour === 7 && min === 0 && alreadyReset !== today){
-        teams.forEach(team => {
-            db.ref("production/" + team).set({
-                total: 0,
-                lastUpdated: new Date().toLocaleTimeString()
-            });
-        });
-        localStorage.setItem("lastReset", today);
-        console.log("✅ Daily reset complete");
+    // Load last reset date
+    const lastReset = localStorage.getItem("lastResetDate");
+
+    // Has the site already reset today?
+    if (lastReset === todayStr) {
+        return; // already done, stop here
+    }
+
+    // Create today's 7:00 AM timestamp
+    const resetTime = new Date();
+    resetTime.setHours(7, 0, 0, 0);
+
+    // If current time is AFTER 7:00 AM → perform reset
+    if (now.getTime() >= resetTime.getTime()) {
+        performDailyReset();
+        localStorage.setItem("lastResetDate", todayStr);
     }
 }
+
+// --- WHAT GETS RESET --- //
+function performDailyReset() {
+    // CLEAR ONLY THE DATA THE LEADERBOARD USES
+    localStorage.removeItem("ULTRA1_data");
+    localStorage.removeItem("ULTRA2_data");
+    localStorage.removeItem("ULTRA3_data");
+
+    // If you store anything else, remove here too:
+    // localStorage.removeItem("someOtherField");
+
+    console.log("Daily reset completed at 7AM");
+}
+
+// RUN CHECK ON PAGE LOAD
+checkDailyReset();
 
 // ===== Initialize =====
 loadBoard();
