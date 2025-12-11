@@ -96,6 +96,7 @@ body.dark button {
 
 .green { color: #00cc5a; font-weight: bold; }
 .red { color: #ff4a4a; font-weight: bold; }
+.orange { color: #ff9800; font-weight: bold; }
 
 .timestamp {
     font-size: 11px;
@@ -289,7 +290,16 @@ function renderBoard(data){
     totals.forEach((team,i)=>{
         const pct = Math.min(team.total / DAILY_TARGET * 100, 100);
         const diff = team.total - expectedSoFar;
-        const diffClass = diff >= 0 ? "green" : "red";
+        const absMins = Math.abs(diff) / TARGET_PER_MIN;
+
+let diffClass;
+if (diff < 0) { // Behind
+    if (absMins <= 30) diffClass = "orange"; // slightly behind
+    else diffClass = "red"; // way behind
+} else { // Ahead
+    if (absMins <= 20) diffClass = "orange"; // slightly ahead
+    else diffClass = "green"; // way ahead
+}
 
         const absMins = Math.abs(diff) / TARGET_PER_MIN;
         const h = Math.floor(absMins / 60);
