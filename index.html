@@ -287,7 +287,7 @@ function renderBoard(data) {
     board.innerHTML = "";
 
     totals.forEach((team, i) => {
-        const pct = Math.min(team.total / DAILY_TARGET * 100, 100);
+        const pct = (team.total / DAILY_TARGET) * 100;
         const diff = team.total - expectedSoFar;
 
         // --- Minutes ahead/behind ---
@@ -336,7 +336,7 @@ function renderBoard(data) {
 
     </div>
 
-    <progress value="${pct}" max="100"></progress>
+    <progress value="${pct}" max="${Math.max(100, pct)}"></progress>
 
     <div class="diff-line ${diffClass}">
         ${diffText} • ${timeText} • ${Math.round(pct)}% completed
