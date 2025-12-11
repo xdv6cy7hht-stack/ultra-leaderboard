@@ -330,8 +330,7 @@ function renderBoard(data){
     <progress value="${pct}" max="100"></progress>
 
     <div class="diff-line ${diffClass}">
-        ${diffText} • ${timeText}
-
+        ${diffText} • ${timeText} • ${Math.round(pct)}% completed
     </div>
 
 </div>`;
