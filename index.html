@@ -370,9 +370,9 @@ try {
 }
 
 // ===== Constants =====
-const DAILY_TARGET = 36000;
+const DAILY_TARGET = 40000;
 const teams = ["ULTRA1","ULTRA2","ULTRA3"];
-const START_HOUR = 9;
+const START_HOUR = 8;
 const TARGET_PER_HOUR = 4000;
 const TARGET_PER_MIN = TARGET_PER_HOUR / 60;
 
@@ -389,8 +389,8 @@ function renderBoard(data) {
     const now = new Date();
 
     // ========== Correct expected parts logic ==========
-    const START_HOUR = 9;             // Shift starts 09:00
-    const DAILY_TARGET = 36000;       // 36k per day
+    const START_HOUR = 8;             // Shift starts 09:00
+    const DAILY_TARGET = 40000;       // 36k per day
     const TARGET_PER_HOUR = 4000;     // 4k/hr
     const TARGET_PER_MIN = TARGET_PER_HOUR / 60;
 
@@ -398,7 +398,7 @@ function renderBoard(data) {
     let hoursPassed = (now.getHours() + now.getMinutes() / 60) - START_HOUR;
 
     if (hoursPassed < 0) hoursPassed = 0;  // Before 9am → treat as 0
-    if (hoursPassed > 9) hoursPassed = 9;  // After 6pm → cap at full shift
+    if (hoursPassed > 10) hoursPassed = 10;  // After 6pm → cap at full shift
 
     const expectedSoFar = Math.min(hoursPassed * TARGET_PER_HOUR, DAILY_TARGET);
     // ==================================================
