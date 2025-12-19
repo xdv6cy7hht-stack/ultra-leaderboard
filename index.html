@@ -437,6 +437,8 @@ function renderBoard(data) {
 
     totals.forEach((team, i) => {
 
+        let dailyTarget = DAILY_TARGET;
+        
         const pct = (team.total / DAILY_TARGET) * 100;
 
         const diff = team.total - expectedSoFar;
@@ -446,6 +448,8 @@ function renderBoard(data) {
         const h = Math.floor(absMins / 60);
         const m = Math.round(absMins % 60);
 
+const achieved = team.total >= dailyTarget;
+        
         const timeText = h > 0
             ? `≈ ${h}h ${m}m ${diff >= 0 ? "ahead" : "behind"}`
             : `≈ ${m} min ${diff >= 0 ? "ahead" : "behind"}`;
@@ -453,8 +457,6 @@ function renderBoard(data) {
         const diffText = diff >= 0
             ? `Ahead by ${Math.round(diff)} parts`
             : `Behind by ${Math.round(Math.abs(diff))} parts`;
-        
-const achieved = team.total >= dailyTarget;
         
         // ===== Orange zone =====
         let diffClass;
