@@ -298,6 +298,24 @@ progress {
     border-radius: 20px;
     font-size: 0.9rem;
 }
+    /* ===== Confetti ===== */
+.confetti {
+    position: fixed;
+    top: -10px;
+    width: 8px;
+    height: 12px;
+    opacity: 0.9;
+    pointer-events: none;
+    animation: confettiFall linear forwards;
+    z-index: 2000;
+}
+
+@keyframes confettiFall {
+    to {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0;
+    }
+}
 </style>
 </head>
 
@@ -408,6 +426,20 @@ function save(name){
         lastUpdated: new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })
     });
 }
+    function fireConfetti() {
+    const colors = ["#FFD700", "#FF5252", "#4CAF50", "#2979FF"];
+
+    for (let i = 0; i < 120; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = 3 + Math.random() * 2 + "s";
+
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 5000);
+    }
+}
 function renderBoard(data) {
 
     const now = new Date();
@@ -417,7 +449,8 @@ function renderBoard(data) {
     const DAILY_TARGET = 38000;       // 36k per day
     const TARGET_PER_HOUR = 4000;     // 4k/hr
     const TARGET_PER_MIN = TARGET_PER_HOUR / 60;
-
+    const todayKey = new Date().toDateString();
+    
     // Hours since 9am
     let hoursPassed = (now.getHours() + now.getMinutes() / 60) - START_HOUR;
 
@@ -449,7 +482,14 @@ function renderBoard(data) {
         const m = Math.round(absMins % 60);
 
 const achieved = team.total >= dailyTarget;
-        
+
+        const confettiKey = `confetti_${team.name}_${todayKey}`;
+const alreadyFired = localStorage.getItem(confettiKey);
+
+if (achieved && !alreadyFired) {
+    fireConfetti();
+    localStorage.setItem(confettiKey, "true");
+}
         const timeText = h > 0
             ? `≈ ${h}h ${m}m ${diff >= 0 ? "ahead" : "behind"}`
             : `≈ ${m} min ${diff >= 0 ? "ahead" : "behind"}`;
