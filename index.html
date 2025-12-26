@@ -330,7 +330,7 @@ progress {
 
     <div class="menu-drawer" id="menuDrawer">
         <button id="darkToggle" class="toggle-btn">🌙 Dark Mode</button>
-        <button id="christmasToggleBtn" class="toggle-btn active">🎄 Christmas ON</button>
+        <button id="christmasToggleBtn" class="toggle-btn">🎄 Christmas OFF</button>
         <button id="resetBtn" class="toggle-btn">🔁 Reset Now</button>
     </div>
 </div>
@@ -387,7 +387,7 @@ function updateChristmas(state) {
 }
 
 // Initial load (Christmas ON by default)
-updateChristmas(true);
+updateChristmas(false);
 
 // Toggle button click
 christmasToggleBtn.addEventListener("click", () => {
