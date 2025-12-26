@@ -168,32 +168,33 @@ body.dark .toggle-btn.active {
 }
  .menu-container {
     position: fixed;
-    top: 0;
-    right: -180px; /* hidden */
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* drawer aligns left inside container */
-    transition: right 0.35s ease;
+    top: 10px;
+    right: 10px; /* menu button always visible */
     z-index: 999;
 }
-
-.menu-container.open {
-    right: 0; /* slide in */
-}
-
 .menu-drawer {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    position: fixed;
+    top: 0;
+    right: -200px; /* fully hidden */
+    height: 100vh;
+    width: 180px;
     background: #fff;
     padding: 20px 15px;
-    width: 180px;
     box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+    transition: right 0.35s ease;
+}
+
+.menu-container.open .menu-drawer {
+    right: 0;
 }
 
 body.dark .menu-drawer {
     background: #1e1e1e;
+
+}
+.menu-button {
+    z-index: 1001;
+
 }
 
 .menu-button {
